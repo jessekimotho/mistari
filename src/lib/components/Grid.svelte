@@ -15,31 +15,49 @@
 
 	export let grid: string[][];
 
+	// === Configurable Constants ===
 	export const SWIPE_THRESHOLD_RATIO = 0.3;
+	export const TRAIL_LINE_WIDTH = 64; // px
+	export const TILE_SIZE = 84; // px
+	export const GAP_SIZE = 8; // px
+
+	// Derived dimensions
+	const tileSpacing = TILE_SIZE + GAP_SIZE;
+	const svgWidth = grid[0].length * TILE_SIZE + (grid[0].length - 1) * GAP_SIZE;
+	const svgHeight = grid.length * TILE_SIZE + (grid.length - 1) * GAP_SIZE;
+
+	function tileCenterPx(row: number, col: number) {
+		return {
+			x: col * tileSpacing + TILE_SIZE / 2,
+			y: row * tileSpacing + TILE_SIZE / 2
+		};
+	}
 
 	const selecting = writable(false);
 	let isDragging = false;
-	const poppingTiles = writable(new Set<string>());
+	const poppingTiles = writable<Set<string>>(new Set());
 
-	const derivedRemainingLetters = derived(foundWords, ($found) => {
-		return new Set(
-			targetWords
-				.filter((w) => !$found.has(w))
-				.join('')
-				.split('')
-		);
-	});
+	const derivedRemainingLetters = derived(
+		foundWords,
+		($found) =>
+			new Set(
+				targetWords
+					.filter((w) => !$found.has(w))
+					.join('')
+					.split('')
+			)
+	);
 
-	const trailSegments = derived(selectedTiles, ($tiles) => {
-		return segmentTrail($tiles).flatMap((segment, i) => {
+	const trailSegments = derived(selectedTiles, ($tiles) =>
+		segmentTrail($tiles).flatMap((segment, i) => {
 			const color = trailColors[i % trailColors.length];
 			return segment.slice(0, -1).map((from, j) => ({
 				from,
 				to: segment[j + 1],
 				color
 			}));
-		});
-	});
+		})
+	);
 
 	function isAdjacent(a: TilePosition, b: TilePosition): boolean {
 		return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
@@ -61,9 +79,9 @@
 
 	function isInsideSwipeThreshold(event: PointerEvent, row: number, col: number): boolean {
 		const tile = event.currentTarget as HTMLElement;
-		const { left, top, width, height } = tile.getBoundingClientRect();
+		const { left, top, width } = tile.getBoundingClientRect();
 		const dx = event.clientX - (left + width / 2);
-		const dy = event.clientY - (top + height / 2);
+		const dy = event.clientY - (top + width / 2);
 		return Math.hypot(dx, dy) < width * SWIPE_THRESHOLD_RATIO;
 	}
 
@@ -87,6 +105,17 @@
 		) {
 			updateTrail(row, col);
 		}
+	}
+
+	function handleTouchMove(row: number, col: number, e: TouchEvent) {
+		if (!isDragging || !get(selecting)) return;
+		const touch = e.changedTouches[0];
+		const synthetic = {
+			clientX: touch.clientX,
+			clientY: touch.clientY,
+			currentTarget: e.currentTarget as HTMLElement
+		} as unknown as PointerEvent;
+		handlePointerEnter(row, col, synthetic);
 	}
 
 	function triggerPopEffect(trail: TilePosition[]) {
@@ -121,22 +150,28 @@
 		};
 
 		window.addEventListener('pointerup', onUp);
+		window.addEventListener('touchend', onUp);
 		window.addEventListener('mousedown', clickAway);
 		return () => {
 			window.removeEventListener('pointerup', onUp);
+			window.removeEventListener('touchend', onUp);
 			window.removeEventListener('mousedown', clickAway);
 		};
 	});
 </script>
 
-<!-- GRID WRAPPER -->
-<div class="relative w-fit">
+<!-- Container sized exactly to grid -->
+<div class="relative" style="width: {svgWidth}px; height: {svgHeight}px;">
 	<!-- Background Tiles -->
-	<div class="relative z-0 grid grid-cols-4 gap-2">
+	<div
+		class="absolute inset-0 grid"
+		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+	>
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="tile tile-dimensions rounded bg-white"
+					class="tile rounded bg-white"
+					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
 					class:bg-green-500={get(feedbackMap)[`${r}-${c}`] === 'correct'}
 					class:bg-red-500={get(feedbackMap)[`${r}-${c}`] === 'wrong'}
 					class:opacity-0={!$derivedRemainingLetters.has(letter)}
@@ -145,43 +180,51 @@
 		{/each}
 	</div>
 
-	<!-- Trail Lines -->
-	<svg
-		class="pointer-events-none absolute inset-0 z-10 h-full w-full"
-		viewBox="0 0 4 4"
-		preserveAspectRatio="none"
-	>
+	<!-- Overlay SVG for trail -->
+	<svg class="pointer-events-none absolute inset-0" width={svgWidth} height={svgHeight}>
 		{#if $selectedTiles.length > 0}
-			<circle
-				cx={$selectedTiles[0].col + 0.5}
-				cy={$selectedTiles[0].row + 0.5}
-				r="0.2"
-				fill={trailColors[0]}
+			{@const p = tileCenterPx($selectedTiles[0].row, $selectedTiles[0].col)}
+			<line
+				x1={p.x}
+				y1={p.y}
+				x2={p.x}
+				y2={p.y}
+				stroke={trailColors[0]}
+				stroke-width={TRAIL_LINE_WIDTH}
+				stroke-linecap="round"
+				vector-effect="non-scaling-stroke"
 				in:draw={{ duration: 200 }}
 			/>
 		{/if}
 
 		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}`)}
+			{@const a = tileCenterPx(from.row, from.col)}
+			{@const b = tileCenterPx(to.row, to.col)}
 			<line
-				x1={from.col + 0.5}
-				y1={from.row + 0.5}
-				x2={to.col + 0.5}
-				y2={to.row + 0.5}
+				x1={a.x}
+				y1={a.y}
+				x2={b.x}
+				y2={b.y}
 				stroke={color}
-				stroke-width="0.7"
+				stroke-width={TRAIL_LINE_WIDTH}
 				stroke-linecap="round"
+				vector-effect="non-scaling-stroke"
 				in:draw={{ duration: 250 }}
 				out:draw={{ duration: 200 }}
 			/>
 		{/each}
 	</svg>
 
-	<!-- Letters -->
-	<div class="pointer-events-none absolute inset-0 z-20 grid grid-cols-4 gap-2">
+	<!-- Letters Layer -->
+	<div
+		class="pointer-events-none absolute inset-0 grid"
+		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+	>
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="tile-font tile-dimensions flex items-center justify-center font-bold transition-opacity select-none"
+					class="flex items-center justify-center font-bold transition-opacity select-none"
+					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px; font-size: {TILE_SIZE * 0.5}px;"
 					class:text-white={$selectedTiles.some((p) => p.row === r && p.col === c)}
 					class:text-black={!$selectedTiles.some((p) => p.row === r && p.col === c) &&
 						$derivedRemainingLetters.has(letter)}
@@ -194,30 +237,29 @@
 		{/each}
 	</div>
 
-	<!-- Hitboxes (single-layer) -->
-	<div class="absolute inset-0 z-30 grid grid-cols-4 gap-2">
+	<!-- Interaction Layer with Pointer & Touch -->
+	<div
+		class="absolute inset-0 grid"
+		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+	>
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="hitbox tile-dimensions"
+					class="hitbox"
+					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
 					class:cursor-pointer={$derivedRemainingLetters.has(letter)}
 					class:cursor-default={!$derivedRemainingLetters.has(letter)}
 					on:pointerdown={() => handlePointerDown(r, c)}
 					on:pointermove={(e) => handlePointerEnter(r, c, e)}
-				></div>
+					on:touchstart|preventDefault={() => handlePointerDown(r, c)}
+					on:touchmove|preventDefault={(e) => handleTouchMove(r, c, e)}
+				/>
 			{/each}
 		{/each}
 	</div>
 </div>
 
 <style>
-	.tile-dimensions {
-		width: 84px;
-		height: 84px;
-	}
-	.tile-font {
-		font-size: 42px;
-	}
 	@keyframes pop {
 		0% {
 			transform: scale(1);

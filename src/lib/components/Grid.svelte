@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { writable, get, derived } from 'svelte/store';
 	import { draw } from 'svelte/transition';
+	import { onMount } from 'svelte';
 	import {
 		selectedTiles,
 		currentWord,
@@ -9,7 +10,6 @@
 		feedbackMap,
 		trailColors
 	} from '$lib/stores/game';
-	import { onMount } from 'svelte';
 	import { segmentTrail } from '$lib/utils/segment';
 	import type { TilePosition } from '$lib/types';
 
@@ -17,91 +17,73 @@
 
 	const selecting = writable(false);
 	let isDragging = false;
-	const poppingTiles = writable<Set<string>>(new Set());
+	const poppingTiles = writable(new Set<string>());
 
 	const derivedRemainingLetters = derived(foundWords, ($found) => {
-		const needed = targetWords
-			.filter((w) => !$found.has(w))
-			.join('')
-			.split('');
-		return new Set(needed);
+		return new Set(
+			targetWords
+				.filter((w) => !$found.has(w))
+				.join('')
+				.split('')
+		);
 	});
 
 	const trailSegments = derived(selectedTiles, ($tiles) => {
-		const segs = segmentTrail($tiles);
-		const flat: { from: TilePosition; to: TilePosition; color: string }[] = [];
-		segs.forEach((segment, i) => {
+		return segmentTrail($tiles).flatMap((segment, i) => {
 			const color = trailColors[i % trailColors.length];
-			for (let j = 0; j < segment.length - 1; j++) {
-				flat.push({ from: segment[j], to: segment[j + 1], color });
-			}
+			return segment.slice(0, -1).map((from, j) => ({
+				from,
+				to: segment[j + 1],
+				color
+			}));
 		});
-		return flat;
 	});
 
 	function isAdjacent(a: TilePosition, b: TilePosition): boolean {
 		return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 	}
 
-	function handlePointerDown(row: number, col: number) {
-		const letter = grid[row][col];
-		if (!get(derivedRemainingLetters).has(letter)) return;
-
+	function updateTrail(row: number, col: number) {
 		const trail = get(selectedTiles);
 		const last = trail.at(-1);
-		const already = trail.findIndex((p) => p.row === row && p.col === col);
+		const index = trail.findIndex((p) => p.row === row && p.col === col);
 
-		if (already !== -1) {
-			const newTrail = trail.slice(0, already + 1);
-			selectedTiles.set(newTrail);
-			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
-		} else if (!last || isAdjacent(last, { row, col })) {
-			const newTrail = last ? [...trail, { row, col }] : [{ row, col }];
-			selectedTiles.set(newTrail);
-			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
-		} else {
-			selectedTiles.set([{ row, col }]);
-			currentWord.set(grid[row][col]);
-		}
+		let newTrail;
+		if (index !== -1) newTrail = trail.slice(0, index + 1);
+		else if (!last || isAdjacent(last, { row, col })) newTrail = [...trail, { row, col }];
+		else newTrail = [{ row, col }];
 
-		isDragging = true;
-		selecting.set(true);
+		selectedTiles.set(newTrail);
+		currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
 	}
 
 	function isInsideSwipeThreshold(event: PointerEvent, row: number, col: number): boolean {
 		const tile = event.currentTarget as HTMLElement;
-		const rect = tile.getBoundingClientRect();
-		const centerX = rect.left + rect.width / 2;
-		const centerY = rect.top + rect.height / 2;
+		const { left, top, width, height } = tile.getBoundingClientRect();
+		const dx = event.clientX - (left + width / 2);
+		const dy = event.clientY - (top + height / 2);
+		return Math.hypot(dx, dy) < width * 0.3;
+	}
 
-		const dx = event.clientX - centerX;
-		const dy = event.clientY - centerY;
-		const distance = Math.sqrt(dx * dx + dy * dy);
-
-		return distance < rect.width * 0.3;
+	function handlePointerDown(row: number, col: number) {
+		if (!get(derivedRemainingLetters).has(grid[row][col])) return;
+		updateTrail(row, col);
+		isDragging = true;
+		selecting.set(true);
 	}
 
 	function handlePointerEnter(row: number, col: number, event: PointerEvent) {
 		if (!isDragging || !get(selecting)) return;
-
-		// Check if the pointer is close enough to center during swipe
 		if (!isInsideSwipeThreshold(event, row, col)) return;
-
-		const letter = grid[row][col];
-		if (!get(derivedRemainingLetters).has(letter)) return;
+		if (!get(derivedRemainingLetters).has(grid[row][col])) return;
 
 		const trail = get(selectedTiles);
 		const last = trail.at(-1);
-		const already = trail.findIndex((p) => p.row === row && p.col === col);
-
-		if (already !== -1) {
-			const newTrail = trail.slice(0, already + 1);
-			selectedTiles.set(newTrail);
-			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
-		} else if (last && isAdjacent(last, { row, col })) {
-			const newTrail = [...trail, { row, col }];
-			selectedTiles.set(newTrail);
-			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
+		if (
+			trail.some((p) => p.row === row && p.col === col) ||
+			(last && isAdjacent(last, { row, col }))
+		) {
+			updateTrail(row, col);
 		}
 	}
 
@@ -120,7 +102,6 @@
 		const onUp = () => {
 			const trail = get(selectedTiles);
 			const word = trail.map(({ row, col }) => grid[row][col]).join('');
-
 			if (targetWords.includes(word) && !get(foundWords).has(word)) {
 				foundWords.update((s) => new Set([...s, word]));
 				triggerPopEffect(trail);
@@ -131,8 +112,7 @@
 		};
 
 		const clickAway = (e: MouseEvent) => {
-			const hit = (e.target as HTMLElement).closest('.tile, .hitbox');
-			if (!hit) {
+			if (!(e.target as HTMLElement).closest('.tile, .hitbox')) {
 				selectedTiles.set([]);
 				currentWord.set('');
 			}
@@ -140,7 +120,6 @@
 
 		window.addEventListener('pointerup', onUp);
 		window.addEventListener('mousedown', clickAway);
-
 		return () => {
 			window.removeEventListener('pointerup', onUp);
 			window.removeEventListener('mousedown', clickAway);
@@ -155,13 +134,9 @@
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="tile h-16 w-16 rounded border"
+					class="tile h-16 w-16 rounded bg-white"
 					class:bg-green-500={get(feedbackMap)[`${r}-${c}`] === 'correct'}
 					class:bg-red-500={get(feedbackMap)[`${r}-${c}`] === 'wrong'}
-					class:bg-white={!$selectedTiles.some((p) => p.row === r && p.col === c) &&
-						get(feedbackMap)[`${r}-${c}`] !== 'correct' &&
-						get(feedbackMap)[`${r}-${c}`] !== 'wrong' &&
-						$derivedRemainingLetters.has(letter)}
 					class:opacity-0={!$derivedRemainingLetters.has(letter)}
 				></div>
 			{/each}

@@ -15,6 +15,8 @@
 
 	export let grid: string[][];
 
+	export const SWIPE_THRESHOLD_RATIO = 0.3;
+
 	const selecting = writable(false);
 	let isDragging = false;
 	const poppingTiles = writable(new Set<string>());
@@ -62,7 +64,7 @@
 		const { left, top, width, height } = tile.getBoundingClientRect();
 		const dx = event.clientX - (left + width / 2);
 		const dy = event.clientY - (top + height / 2);
-		return Math.hypot(dx, dy) < width * 0.3;
+		return Math.hypot(dx, dy) < width * SWIPE_THRESHOLD_RATIO;
 	}
 
 	function handlePointerDown(row: number, col: number) {
@@ -134,7 +136,7 @@
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="tile h-16 w-16 rounded bg-white"
+					class="tile tile-dimensions rounded bg-white"
 					class:bg-green-500={get(feedbackMap)[`${r}-${c}`] === 'correct'}
 					class:bg-red-500={get(feedbackMap)[`${r}-${c}`] === 'wrong'}
 					class:opacity-0={!$derivedRemainingLetters.has(letter)}
@@ -179,7 +181,7 @@
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="flex h-16 w-16 items-center justify-center text-xl font-bold transition-opacity select-none"
+					class="tile-font tile-dimensions flex items-center justify-center font-bold transition-opacity select-none"
 					class:text-white={$selectedTiles.some((p) => p.row === r && p.col === c)}
 					class:text-black={!$selectedTiles.some((p) => p.row === r && p.col === c) &&
 						$derivedRemainingLetters.has(letter)}
@@ -197,7 +199,7 @@
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="hitbox inset-3 h-16 w-16"
+					class="hitbox tile-dimensions"
 					class:cursor-pointer={$derivedRemainingLetters.has(letter)}
 					class:cursor-default={!$derivedRemainingLetters.has(letter)}
 					on:pointerdown={() => handlePointerDown(r, c)}
@@ -209,6 +211,13 @@
 </div>
 
 <style>
+	.tile-dimensions {
+		width: 84px;
+		height: 84px;
+	}
+	.tile-font {
+		font-size: 42px;
+	}
 	@keyframes pop {
 		0% {
 			transform: scale(1);

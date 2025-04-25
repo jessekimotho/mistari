@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { writable, get, derived } from 'svelte/store';
+	import { draw } from 'svelte/transition';
 	import {
 		selectedTiles,
 		currentWord,
@@ -14,11 +15,12 @@
 
 	export let grid: string[][];
 
+	// UI state
 	const selecting = writable(false);
 	let isDragging = false;
-
 	const poppingTiles = writable<Set<string>>(new Set());
 
+	// Remaining letters store
 	const derivedRemainingLetters = derived(foundWords, ($found) => {
 		const needed = targetWords
 			.filter((w) => !$found.has(w))
@@ -27,9 +29,10 @@
 		return new Set(needed);
 	});
 
+	// Compute line segments for the trail
 	const trailSegments = derived(selectedTiles, ($tiles) => {
 		const segs = segmentTrail($tiles);
-		let flat: { from: TilePosition; to: TilePosition; color: string }[] = [];
+		const flat: { from: TilePosition; to: TilePosition; color: string }[] = [];
 		segs.forEach((segment, i) => {
 			const color = trailColors[i % trailColors.length];
 			for (let j = 0; j < segment.length - 1; j++) {
@@ -45,21 +48,24 @@
 
 	function handlePointerDown(row: number, col: number) {
 		const letter = grid[row][col];
-		if (!$derivedRemainingLetters.has(letter)) return;
+		if (!get(derivedRemainingLetters).has(letter)) return;
 
 		const trail = get(selectedTiles);
 		const last = trail.at(-1);
 		const already = trail.findIndex((p) => p.row === row && p.col === col);
 
 		if (already !== -1) {
+			// backtrack
 			const newTrail = trail.slice(0, already + 1);
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
 		} else if (!last || isAdjacent(last, { row, col })) {
+			// extend or start trail
 			const newTrail = last ? [...trail, { row, col }] : [{ row, col }];
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
 		} else {
+			// restart trail
 			selectedTiles.set([{ row, col }]);
 			currentWord.set(grid[row][col]);
 		}
@@ -71,17 +77,19 @@
 	function handlePointerEnter(row: number, col: number) {
 		if (!isDragging || !get(selecting)) return;
 		const letter = grid[row][col];
-		if (!$derivedRemainingLetters.has(letter)) return;
+		if (!get(derivedRemainingLetters).has(letter)) return;
 
 		const trail = get(selectedTiles);
 		const last = trail.at(-1);
 		const already = trail.findIndex((p) => p.row === row && p.col === col);
 
 		if (already !== -1) {
+			// swipe-back
 			const newTrail = trail.slice(0, already + 1);
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
 		} else if (last && isAdjacent(last, { row, col })) {
+			// extend trail
 			const newTrail = [...trail, { row, col }];
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
@@ -103,10 +111,8 @@
 		const onUp = () => {
 			const trail = get(selectedTiles);
 			const word = trail.map(({ row, col }) => grid[row][col]).join('');
-			console.log('Pointer up. Word:', word);
 
 			if (targetWords.includes(word) && !get(foundWords).has(word)) {
-				console.log('✅ Word found:', word);
 				foundWords.update((s) => new Set([...s, word]));
 				triggerPopEffect(trail);
 			} else {
@@ -118,7 +124,6 @@
 		const clickAway = (e: MouseEvent) => {
 			const hit = (e.target as HTMLElement).closest('.tile, .hitbox');
 			if (!hit) {
-				console.log('❌ Clicked outside. Clearing.');
 				selectedTiles.set([]);
 				currentWord.set('');
 			}
@@ -136,7 +141,7 @@
 
 <!-- GRID WRAPPER -->
 <div class="relative w-fit">
-	<!-- BACKGROUND TILES -->
+	<!-- Background Tiles -->
 	<div class="relative z-0 grid grid-cols-4 gap-2">
 		{#each grid as row, r}
 			{#each row as letter, c}
@@ -154,13 +159,25 @@
 		{/each}
 	</div>
 
-	<!-- TRAIL SVG -->
+	<!-- Trail Lines and Start-Point Marker -->
 	<svg
 		class="pointer-events-none absolute inset-0 z-10 h-full w-full"
 		viewBox="0 0 4 4"
 		preserveAspectRatio="none"
 	>
-		{#each $trailSegments as { from, to, color }}
+		<!-- Start marker on first tile -->
+		{#if $selectedTiles.length > 0}
+			<circle
+				cx={$selectedTiles[0].col + 0.5}
+				cy={$selectedTiles[0].row + 0.5}
+				r="0.2"
+				fill={trailColors[0]}
+				in:draw={{ duration: 200 }}
+			/>
+		{/if}
+
+		<!-- Connective lines -->
+		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}`)}
 			<line
 				x1={from.col + 0.5}
 				y1={from.row + 0.5}
@@ -169,11 +186,13 @@
 				stroke={color}
 				stroke-width="0.7"
 				stroke-linecap="round"
+				in:draw={{ duration: 250 }}
+				out:draw={{ duration: 200 }}
 			/>
 		{/each}
 	</svg>
 
-	<!-- LETTERS -->
+	<!-- Letter layer -->
 	<div class="pointer-events-none absolute inset-0 z-20 grid grid-cols-4 gap-2">
 		{#each grid as row, r}
 			{#each row as letter, c}
@@ -191,7 +210,7 @@
 		{/each}
 	</div>
 
-	<!-- HITBOXES -->
+	<!-- Hitboxes -->
 	<div class="absolute inset-0 z-30 grid grid-cols-4 gap-2">
 		{#each grid as row, r}
 			{#each row as letter, c}
@@ -219,7 +238,6 @@
 			transform: scale(1);
 		}
 	}
-
 	.animate-pop {
 		animation: pop 350ms ease-in-out;
 	}

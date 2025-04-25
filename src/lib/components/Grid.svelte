@@ -170,7 +170,7 @@
 		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
-					class="tile rounded bg-white"
+					class="tile rounded bg-gray-200"
 					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
 					class:bg-green-500={get(feedbackMap)[`${r}-${c}`] === 'correct'}
 					class:bg-red-500={get(feedbackMap)[`${r}-${c}`] === 'wrong'}

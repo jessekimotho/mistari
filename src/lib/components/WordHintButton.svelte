@@ -21,12 +21,15 @@
 </script>
 
 {#if isFound}
-	<span class="rounded-4xl border bg-green-200 px-3 font-mono text-lg">{word}</span>
+	<span
+		class="just-fy-center text-md inline-flex items-center rounded-4xl bg-[#26c04c] px-8 text-center font-bold text-white"
+		>{word}</span
+	>
 {:else}
 	<button
 		on:click={showHint}
-		class="inline-block rounded-4xl border bg-white text-center font-mono text-lg text-black transition hover:scale-105"
-		style="width: calc({word.length}ch * 1.75)"
+		class="inline-flex items-center justify-center rounded-4xl bg-gray-200 text-center text-lg text-black transition hover:scale-105"
+		style="width: calc(({word.length}ch * 1.75) + 16px)"
 	>
 		{word.length}
 	</button>

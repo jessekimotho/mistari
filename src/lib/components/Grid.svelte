@@ -15,12 +15,10 @@
 
 	export let grid: string[][];
 
-	// UI state
 	const selecting = writable(false);
 	let isDragging = false;
 	const poppingTiles = writable<Set<string>>(new Set());
 
-	// Remaining letters store
 	const derivedRemainingLetters = derived(foundWords, ($found) => {
 		const needed = targetWords
 			.filter((w) => !$found.has(w))
@@ -29,7 +27,6 @@
 		return new Set(needed);
 	});
 
-	// Compute line segments for the trail
 	const trailSegments = derived(selectedTiles, ($tiles) => {
 		const segs = segmentTrail($tiles);
 		const flat: { from: TilePosition; to: TilePosition; color: string }[] = [];
@@ -55,17 +52,14 @@
 		const already = trail.findIndex((p) => p.row === row && p.col === col);
 
 		if (already !== -1) {
-			// backtrack
 			const newTrail = trail.slice(0, already + 1);
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
 		} else if (!last || isAdjacent(last, { row, col })) {
-			// extend or start trail
 			const newTrail = last ? [...trail, { row, col }] : [{ row, col }];
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
 		} else {
-			// restart trail
 			selectedTiles.set([{ row, col }]);
 			currentWord.set(grid[row][col]);
 		}
@@ -74,8 +68,25 @@
 		selecting.set(true);
 	}
 
-	function handlePointerEnter(row: number, col: number) {
+	function isInsideSwipeThreshold(event: PointerEvent, row: number, col: number): boolean {
+		const tile = event.currentTarget as HTMLElement;
+		const rect = tile.getBoundingClientRect();
+		const centerX = rect.left + rect.width / 2;
+		const centerY = rect.top + rect.height / 2;
+
+		const dx = event.clientX - centerX;
+		const dy = event.clientY - centerY;
+		const distance = Math.sqrt(dx * dx + dy * dy);
+
+		return distance < rect.width * 0.3;
+	}
+
+	function handlePointerEnter(row: number, col: number, event: PointerEvent) {
 		if (!isDragging || !get(selecting)) return;
+
+		// Check if the pointer is close enough to center during swipe
+		if (!isInsideSwipeThreshold(event, row, col)) return;
+
 		const letter = grid[row][col];
 		if (!get(derivedRemainingLetters).has(letter)) return;
 
@@ -84,12 +95,10 @@
 		const already = trail.findIndex((p) => p.row === row && p.col === col);
 
 		if (already !== -1) {
-			// swipe-back
 			const newTrail = trail.slice(0, already + 1);
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
 		} else if (last && isAdjacent(last, { row, col })) {
-			// extend trail
 			const newTrail = [...trail, { row, col }];
 			selectedTiles.set(newTrail);
 			currentWord.set(newTrail.map((p) => grid[p.row][p.col]).join(''));
@@ -159,13 +168,12 @@
 		{/each}
 	</div>
 
-	<!-- Trail Lines and Start-Point Marker -->
+	<!-- Trail Lines -->
 	<svg
 		class="pointer-events-none absolute inset-0 z-10 h-full w-full"
 		viewBox="0 0 4 4"
 		preserveAspectRatio="none"
 	>
-		<!-- Start marker on first tile -->
 		{#if $selectedTiles.length > 0}
 			<circle
 				cx={$selectedTiles[0].col + 0.5}
@@ -176,7 +184,6 @@
 			/>
 		{/if}
 
-		<!-- Connective lines -->
 		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}`)}
 			<line
 				x1={from.col + 0.5}
@@ -192,7 +199,7 @@
 		{/each}
 	</svg>
 
-	<!-- Letter layer -->
+	<!-- Letters -->
 	<div class="pointer-events-none absolute inset-0 z-20 grid grid-cols-4 gap-2">
 		{#each grid as row, r}
 			{#each row as letter, c}
@@ -210,7 +217,7 @@
 		{/each}
 	</div>
 
-	<!-- Hitboxes -->
+	<!-- Hitboxes (single-layer) -->
 	<div class="absolute inset-0 z-30 grid grid-cols-4 gap-2">
 		{#each grid as row, r}
 			{#each row as letter, c}
@@ -219,7 +226,7 @@
 					class:cursor-pointer={$derivedRemainingLetters.has(letter)}
 					class:cursor-default={!$derivedRemainingLetters.has(letter)}
 					on:pointerdown={() => handlePointerDown(r, c)}
-					on:pointerenter={() => handlePointerEnter(r, c)}
+					on:pointermove={(e) => handlePointerEnter(r, c, e)}
 				></div>
 			{/each}
 		{/each}

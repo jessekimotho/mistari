@@ -160,18 +160,33 @@
 	}
 	function handleContainerPointerMove(e: PointerEvent) {
 		e.preventDefault();
-		if (!isDragging || !get(selecting)) return;
 		const rect = containerEl.getBoundingClientRect();
-		const x = e.clientX - rect.left;
-		const y = e.clientY - rect.top;
+		// 1) Raw position inside the _scaled_ container
+		const scaledX = e.clientX - rect.left;
+		const scaledY = e.clientY - rect.top;
+
+		// 2) Figure out the scale factor between scaled size & logical size
+		const scaleFactor = rect.width / svgWidth; // same as rect.height/svgHeight
+
+		// 3) Convert back to “unscaled” coordinates
+		const x = scaledX / scaleFactor;
+		const y = scaledY / scaleFactor;
+
+		// 4) Now your old math works as expected
 		const col = Math.floor(x / tileSpacing);
 		const row = Math.floor(y / tileSpacing);
-		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) return;
-		const offX = x % tileSpacing;
-		const offY = y % tileSpacing;
-		if (offX > TILE_SIZE || offY > TILE_SIZE) return;
+		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) {
+			return;
+		}
+
+		// (Optional) skip the gap areas:
+		const offsetX = x % tileSpacing;
+		const offsetY = y % tileSpacing;
+		if (offsetX > TILE_SIZE || offsetY > TILE_SIZE) return;
+
 		updateTrail(row, col);
 	}
+
 	function onContainerPointerUp(e: PointerEvent) {
 		if (isDragging) {
 			containerEl.releasePointerCapture(e.pointerId);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Grid from '$lib/components/Grid.svelte';
-	import { currentWord, selectedTiles, targetWords, foundWords } from '$lib/stores/game';
+	import { targetWords } from '$lib/stores/game';
 	import WordHintButton from '$lib/components/WordHintButton.svelte';
 
 	const grid = [

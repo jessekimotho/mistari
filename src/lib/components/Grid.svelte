@@ -326,8 +326,14 @@
 						!get(usedTiles).has(`${r}-${c}`)}
 					class:cursor-default={!$derivedRemainingLetters.has(letter) ||
 						get(usedTiles).has(`${r}-${c}`)}
-					on:pointerdown={() => handlePointerDown(r, c)}
-					on:pointermove={(e) => handlePointerEnter(r, c, e)}
+					on:pointerdown={(e) => {
+						e.preventDefault();
+						handlePointerDown(r, c);
+					}}
+					on:pointermove={(e) => {
+						e.preventDefault();
+						handlePointerEnter(r, c, e);
+					}}
 				></div>
 			{/each}
 		{/each}

@@ -33,11 +33,15 @@
 	const poppingTiles = writable<Set<string>>(new Set());
 	const usedTiles = writable<Set<string>>(new Set());
 
-	// Computed
+	// Container ref for pointer capture & global handling
+	let containerEl: HTMLDivElement;
+
+	// Computed dimensions
 	const tileSpacing = TILE_SIZE + GAP_SIZE;
 	$: svgWidth = displayGrid[0].length * TILE_SIZE + (displayGrid[0].length - 1) * GAP_SIZE;
 	$: svgHeight = displayGrid.length * TILE_SIZE + (displayGrid.length - 1) * GAP_SIZE;
 
+	// Remaining letters set
 	const derivedRemainingLetters = derived(
 		foundWords,
 		($found) =>
@@ -49,6 +53,7 @@
 			)
 	);
 
+	// Trail segments
 	const trailSegments = derived(selectedTiles, ($tiles) => {
 		const segments = segmentTrail($tiles).flatMap((segment, i) => {
 			const color = trailColors[i % trailColors.length];
@@ -58,50 +63,36 @@
 				color
 			}));
 		});
-
-		// 🛠 NEW: Handle single-tile selection gracefully
 		if ($tiles.length === 1) {
 			const only = $tiles[0];
-			segments.push({
-				from: only,
-				to: only,
-				color: trailColors[0]
-			});
+			segments.push({ from: only, to: only, color: trailColors[0] });
 		}
-
 		return segments;
 	});
 
-	// Helpers
+	// Position helpers
 	function tileCenterPx(row: number, col: number) {
-		return {
-			x: col * tileSpacing + TILE_SIZE / 2,
-			y: row * tileSpacing + TILE_SIZE / 2
-		};
+		return { x: col * tileSpacing + TILE_SIZE / 2, y: row * tileSpacing + TILE_SIZE / 2 };
 	}
-
-	function isAdjacent(a: TilePosition, b: TilePosition): boolean {
+	function isAdjacent(a: TilePosition, b: TilePosition) {
 		return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 	}
 
+	// Core trail update
 	function updateTrail(row: number, col: number) {
 		const trail = get(selectedTiles);
 		const last = trail.at(-1);
-		const index = trail.findIndex((p) => p.row === row && p.col === col);
+		const idx = trail.findIndex((p) => p.row === row && p.col === col);
 
-		let newTrail;
-		if (index !== -1) {
-			newTrail = trail.slice(0, index + 1);
-		} else if (!last || isAdjacent(last, { row, col })) {
-			newTrail = [...trail, { row, col }];
-		} else {
-			newTrail = [{ row, col }];
-		}
+		let newTrail = [];
+		if (idx >= 0) newTrail = trail.slice(0, idx + 1);
+		else if (!last || isAdjacent(last, { row, col })) newTrail = [...trail, { row, col }];
+		else newTrail = [{ row, col }];
 
 		selectedTiles.set(newTrail);
-		currentWord.set(newTrail.map((p) => displayGrid[p.row][p.col]).join(''));
-
 		const word = newTrail.map((p) => displayGrid[p.row][p.col]).join('');
+		currentWord.set(word);
+
 		if (targetWords.includes(word)) {
 			if (!get(foundWords).has(word)) {
 				foundWords.update((s) => {
@@ -113,11 +104,8 @@
 					return next;
 				});
 				const used = get(usedTiles);
-				for (const p of newTrail) {
-					used.add(`${p.row}-${p.col}`);
-				}
+				newTrail.forEach((p) => used.add(`${p.row}-${p.col}`));
 				usedTiles.set(new Set(used));
-
 				triggerPopEffect(newTrail);
 				isDragging = false;
 				selecting.set(false);
@@ -128,6 +116,7 @@
 		}
 	}
 
+	// Effects
 	function triggerAlreadyFoundTrailEffect(trail: TilePosition[]) {
 		trailIsAlreadyFound.set(true);
 		setTimeout(() => {
@@ -136,57 +125,10 @@
 			trailIsAlreadyFound.set(false);
 		}, 600);
 	}
-
 	function flashWordHint(word: string) {
 		hintFlashWord.set(word);
 		setTimeout(() => hintFlashWord.set(null), 800);
 	}
-
-	function handlePointerDown(row: number, col: number) {
-		const letter = displayGrid[row][col];
-		const remaining = get(derivedRemainingLetters);
-
-		if (!remaining.has(letter)) {
-			if (get(selectedTiles).length > 0) {
-				selecting.set(false);
-				isDragging = false;
-				clearingTrail.set(true);
-				setTimeout(() => {
-					selectedTiles.set([]);
-					currentWord.set('');
-					clearingTrail.set(false);
-				}, 300);
-			}
-			return;
-		}
-
-		updateTrail(row, col);
-		isDragging = true;
-		selecting.set(true);
-	}
-
-	function handlePointerEnter(row: number, col: number, event: PointerEvent) {
-		if (!isDragging || !get(selecting)) return;
-
-		const tile = event.currentTarget as HTMLElement;
-		const { left, top, width } = tile.getBoundingClientRect();
-		const dx = event.clientX - (left + width / 2);
-		const dy = event.clientY - (top + width / 2);
-		if (Math.hypot(dx, dy) > width * SWIPE_THRESHOLD_RATIO) return;
-
-		const letter = displayGrid[row][col];
-		if (!get(derivedRemainingLetters).has(letter)) return;
-
-		const trail = get(selectedTiles);
-		const last = trail.at(-1);
-		if (
-			trail.some((p) => p.row === row && p.col === col) ||
-			(last && isAdjacent(last, { row, col }))
-		) {
-			updateTrail(row, col);
-		}
-	}
-
 	function triggerPopEffect(trail: TilePosition[]) {
 		const keys = trail.map((p) => `${p.row}-${p.col}`);
 		poppingTiles.set(new Set(keys));
@@ -198,21 +140,49 @@
 		}, 350);
 	}
 
+	// Final word center rearrangement
 	function rearrangeFinalWord(word: string) {
 		const newGrid = displayGrid.map((r) => [...r]);
-		const rowIdx = Math.floor(newGrid.length / 2);
-		for (let i = 0; i < word.length && i < newGrid[rowIdx].length; i++) {
-			newGrid[rowIdx][i] = word[i];
+		const mid = Math.floor(newGrid.length / 2);
+		for (let i = 0; i < word.length && i < newGrid[mid].length; i++) {
+			newGrid[mid][i] = word[i];
 		}
 		displayGrid = newGrid;
 	}
 
-	onMount(() => {
-		const onUp = () => {
+	// Pointer handlers
+	function onHitboxPointerDown(e: PointerEvent, row: number, col: number) {
+		e.preventDefault();
+		containerEl.setPointerCapture(e.pointerId);
+		isDragging = true;
+		selecting.set(true);
+		updateTrail(row, col);
+	}
+	function handleContainerPointerMove(e: PointerEvent) {
+		e.preventDefault();
+		if (!isDragging || !get(selecting)) return;
+		const rect = containerEl.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+		const col = Math.floor(x / tileSpacing);
+		const row = Math.floor(y / tileSpacing);
+		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) return;
+		const offX = x % tileSpacing;
+		const offY = y % tileSpacing;
+		if (offX > TILE_SIZE || offY > TILE_SIZE) return;
+		updateTrail(row, col);
+	}
+	function onContainerPointerUp(e: PointerEvent) {
+		if (isDragging) {
+			containerEl.releasePointerCapture(e.pointerId);
 			isDragging = false;
 			selecting.set(false);
-		};
+			selectedTiles.set([]);
+			currentWord.set('');
+		}
+	}
 
+	onMount(() => {
 		const clickAway = (e: MouseEvent) => {
 			if (!(e.target as HTMLElement).closest('.tile, .hitbox')) {
 				selectedTiles.set([]);
@@ -221,24 +191,23 @@
 				isDragging = false;
 			}
 		};
-
-		window.addEventListener('pointerup', onUp);
-		window.addEventListener('touchend', onUp);
 		window.addEventListener('mousedown', clickAway);
-		return () => {
-			window.removeEventListener('pointerup', onUp);
-			window.removeEventListener('touchend', onUp);
-			window.removeEventListener('mousedown', clickAway);
-		};
+		return () => window.removeEventListener('mousedown', clickAway);
 	});
 </script>
 
-<!-- === Markup === -->
-<div class="relative" style="width: {svgWidth}px; height: {svgHeight}px;">
+<div
+	bind:this={containerEl}
+	class="relative"
+	style="touch-action: none; width: {svgWidth}px; height: {svgHeight}px;"
+	on:pointermove={handleContainerPointerMove}
+	on:pointerup={onContainerPointerUp}
+	on:pointercancel={onContainerPointerUp}
+>
 	{#if $allDone}
 		<div
-			class="fixed top-0 left-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 bg-green-600 px-4 py-2 text-white shadow-lg"
-			in:fade={{ duration: 300 }}
+			in:fade
+			class="fixed inset-0 z-10 flex flex-col items-center justify-center bg-green-600 text-white"
 		>
 			<div class="emoji text-4xl">🎉</div>
 			You found all the words!
@@ -297,7 +266,7 @@
 		{#each displayGrid as row, r}
 			{#each row as letter, c}
 				<div
-					class="flex items-center justify-center font-bold transition-opacity select-none"
+					class="flex items-center justify-center font-bold select-none"
 					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px; font-size: {TILE_SIZE * 0.5}px;"
 					class:text-white={$selectedTiles.some((p) => p.row === r && p.col === c)}
 					class:text-black={!$selectedTiles.some((p) => p.row === r && p.col === c) &&
@@ -321,19 +290,12 @@
 			{#each row as letter, c}
 				<div
 					class="hitbox"
-					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px; touch-action: none;"
+					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
 					class:cursor-pointer={$derivedRemainingLetters.has(letter) &&
 						!get(usedTiles).has(`${r}-${c}`)}
 					class:cursor-default={!$derivedRemainingLetters.has(letter) ||
 						get(usedTiles).has(`${r}-${c}`)}
-					on:pointerdown={(e) => {
-						e.preventDefault();
-						handlePointerDown(r, c);
-					}}
-					on:pointermove={(e) => {
-						e.preventDefault();
-						handlePointerEnter(r, c, e);
-					}}
+					on:pointerdown={(e) => onHitboxPointerDown(e, r, c)}
 				></div>
 			{/each}
 		{/each}

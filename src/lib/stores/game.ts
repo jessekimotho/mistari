@@ -21,3 +21,5 @@ export const remainingLetters = derived(foundWords, $foundWords => {
   return lettersNeeded;
 });
 
+export const hintFlashWord = writable<string | null>(null);
+

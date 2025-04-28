@@ -23,25 +23,22 @@
 	export const TILE_SIZE = 84;
 	export const GAP_SIZE = 8;
 
-	// States
+	// State
+	let containerEl: HTMLDivElement;
 	const clearingTrail = writable(false);
 	const trailIsAlreadyFound = writable(false);
 	const allDone = writable(false);
 	const selecting = writable(false);
 	let isDragging = false;
-
 	const poppingTiles = writable<Set<string>>(new Set());
 	const usedTiles = writable<Set<string>>(new Set());
 
-	// Container ref for pointer capture & global handling
-	let containerEl: HTMLDivElement;
-
-	// Computed dimensions
+	// Dimensions
 	const tileSpacing = TILE_SIZE + GAP_SIZE;
 	$: svgWidth = displayGrid[0].length * TILE_SIZE + (displayGrid[0].length - 1) * GAP_SIZE;
 	$: svgHeight = displayGrid.length * TILE_SIZE + (displayGrid.length - 1) * GAP_SIZE;
 
-	// Remaining letters set
+	// Derived letters
 	const derivedRemainingLetters = derived(
 		foundWords,
 		($found) =>
@@ -57,11 +54,7 @@
 	const trailSegments = derived(selectedTiles, ($tiles) => {
 		const segments = segmentTrail($tiles).flatMap((segment, i) => {
 			const color = trailColors[i % trailColors.length];
-			return segment.slice(0, -1).map((from, j) => ({
-				from,
-				to: segment[j + 1],
-				color
-			}));
+			return segment.slice(0, -1).map((from, j) => ({ from, to: segment[j + 1], color }));
 		});
 		if ($tiles.length === 1) {
 			const only = $tiles[0];
@@ -70,7 +63,7 @@
 		return segments;
 	});
 
-	// Position helpers
+	// Helpers
 	function tileCenterPx(row: number, col: number) {
 		return { x: col * tileSpacing + TILE_SIZE / 2, y: row * tileSpacing + TILE_SIZE / 2 };
 	}
@@ -78,13 +71,12 @@
 		return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 	}
 
-	// Core trail update
+	// Update trail
 	function updateTrail(row: number, col: number) {
 		const trail = get(selectedTiles);
 		const last = trail.at(-1);
 		const idx = trail.findIndex((p) => p.row === row && p.col === col);
-
-		let newTrail = [];
+		let newTrail;
 		if (idx >= 0) newTrail = trail.slice(0, idx + 1);
 		else if (!last || isAdjacent(last, { row, col })) newTrail = [...trail, { row, col }];
 		else newTrail = [{ row, col }];
@@ -140,13 +132,11 @@
 		}, 350);
 	}
 
-	// Final word center rearrangement
+	// Final rearrange
 	function rearrangeFinalWord(word: string) {
 		const newGrid = displayGrid.map((r) => [...r]);
 		const mid = Math.floor(newGrid.length / 2);
-		for (let i = 0; i < word.length && i < newGrid[mid].length; i++) {
-			newGrid[mid][i] = word[i];
-		}
+		for (let i = 0; i < word.length && i < newGrid[mid].length; i++) newGrid[mid][i] = word[i];
 		displayGrid = newGrid;
 	}
 
@@ -158,43 +148,29 @@
 		selecting.set(true);
 		updateTrail(row, col);
 	}
+
 	function handleContainerPointerMove(e: PointerEvent) {
 		e.preventDefault();
+		if (!isDragging || !get(selecting)) return;
 		const rect = containerEl.getBoundingClientRect();
-		// 1) Raw position inside the _scaled_ container
 		const scaledX = e.clientX - rect.left;
 		const scaledY = e.clientY - rect.top;
-
-		// 2) Figure out the scale factor between scaled size & logical size
-		const scaleFactor = rect.width / svgWidth; // same as rect.height/svgHeight
-
-		// 3) Convert back to “unscaled” coordinates
-		const x = scaledX / scaleFactor;
-		const y = scaledY / scaleFactor;
-
-		// 4) Now your old math works as expected
+		const scale = rect.width / svgWidth;
+		const x = scaledX / scale;
+		const y = scaledY / scale;
 		const col = Math.floor(x / tileSpacing);
 		const row = Math.floor(y / tileSpacing);
-		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) {
-			return;
-		}
-
-		// (Optional) skip the gap areas:
-		const offsetX = x % tileSpacing;
-		const offsetY = y % tileSpacing;
-		if (offsetX > TILE_SIZE || offsetY > TILE_SIZE) return;
-
+		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) return;
+		const offX = x % tileSpacing;
+		const offY = y % tileSpacing;
+		if (offX > TILE_SIZE || offY > TILE_SIZE) return;
 		updateTrail(row, col);
 	}
 
 	function onContainerPointerUp(e: PointerEvent) {
-		if (isDragging) {
-			containerEl.releasePointerCapture(e.pointerId);
-			isDragging = false;
-			selecting.set(false);
-			selectedTiles.set([]);
-			currentWord.set('');
-		}
+		containerEl.releasePointerCapture(e.pointerId);
+		isDragging = false;
+		selecting.set(false);
 	}
 
 	onMount(() => {

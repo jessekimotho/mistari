@@ -1,55 +1,74 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import Grid from '$lib/components/Grid.svelte';
-	import { targetWords } from '$lib/stores/game';
-	import WordHintButton from '$lib/components/WordHintButton.svelte';
+	import { quizzes } from '$lib/data/quizzes';
+	import QuizPicker from '$lib/components/QuizPicker.svelte';
+	import QuizGame from '$lib/components/QuizGame.svelte';
+	import QuizMenu from '$lib/components/QuizMenu.svelte';
 
-	const grid = [
-		['T', 'O', 'P', 'A'],
-		['H', 'G', 'E', 'W'],
-		['S', 'I', 'N', 'E'],
-		['B', 'K', 'Q', 'U']
-	];
+	import {
+		selectedQuiz,
+		currentView,
+		showMenu,
+		targetWords,
+		foundWords,
+		quizMemory
+	} from '$lib/stores/game';
+	import type { Quiz } from '$lib/types';
 
-	function updateScale() {
-		const baseWidth = 360;
-		const baseHeight = 700;
+	// reactive declarations (Svelte auto-subscribes)
+	$: $selectedQuiz;
+	$: $quizMemory;
+	$: $showMenu;
 
-		const scaleX = window.innerWidth / baseWidth;
-		const scaleY = window.innerHeight / baseHeight;
-
-		const scale = Math.min(scaleX, scaleY);
-
-		document.documentElement.style.setProperty('--scale', scale.toString());
+	function loadQuiz(q: Quiz) {
+		selectedQuiz.set(q);
+		targetWords.set(q.solutions);
+		const mem = $quizMemory[q.id];
+		foundWords.set(new Set(mem?.foundWords ?? []));
 	}
 
-	onMount(() => {
-		setTimeout(updateScale, 50);
-		window.addEventListener('resize', updateScale);
-		return () => window.removeEventListener('resize', updateScale);
-	});
+	const initialQuiz = quizzes.at(-1) ?? quizzes[0];
+	loadQuiz(initialQuiz);
+
+	function shareQuiz() {
+		if (!$selectedQuiz) return;
+
+		navigator.share?.({
+			title: `${$selectedQuiz.title} – Mistari`,
+			text: `Try this puzzle! #${$selectedQuiz.id.toString().padStart(3, '0')} ${$selectedQuiz.title}`,
+			url: window.location.href
+		});
+	}
 </script>
 
 <main class="app-container">
 	<div class="scale-wrapper">
 		<div class="content-wrapper">
-			<div class="header fade-in mt-8 mb-4 flex items-center">
-				<img class="logo" src="/mistari.png" alt="Mistari Logo" />
+			<div class="header fade-in mt-8 mb-4 flex items-center justify-between">
+				<button
+					class="logo-button"
+					on:click={() => showMenu.set(!$showMenu)}
+					aria-label="Open menu"
+				>
+					<img class="logo" src="/mistari.png" alt="Mistari Logo" />
+				</button>
 			</div>
 
 			<div class="main-content fade-in-delayed">
-				<div class="mb-8">
-					<h1 class="text-xl font-bold text-[#25a746]">#001 Chess Pieces</h1>
-					<h2 class="text-lg text-gray-500">by jesse</h2>
-				</div>
-
-				<Grid {grid} />
-
-				<div class="mt-8 flex flex-wrap gap-2">
-					{#each [...targetWords].sort((a, b) => a.length - b.length) as word (word)}
-						<WordHintButton {word} {grid} />
-					{/each}
-				</div>
+				{#if $showMenu}
+					<QuizMenu />
+				{:else if $currentView === 'game'}
+					{#if $selectedQuiz}
+						<QuizGame selectedQuiz={$selectedQuiz} />
+					{/if}
+				{:else if $currentView === 'picker'}
+					<QuizPicker
+						{quizzes}
+						onSelect={(q) => {
+							loadQuiz(q);
+							currentView.set('game');
+						}}
+					/>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -84,18 +103,29 @@
 		transform: scale(var(--scale));
 		display: flex;
 		flex-direction: column;
+		position: relative;
 	}
 
 	.content-wrapper {
 		width: 100%;
 		display: flex;
 		flex-direction: column;
-		padding: 0 16px; /* small horizontal breathing room */
+		padding: 0 16px;
 		box-sizing: border-box;
+		position: relative;
 	}
 
-	.header {
+	.main-content {
+		display: flex;
+		flex-direction: column;
 		width: 100%;
+	}
+
+	.logo-button {
+		all: unset;
+		cursor: pointer;
+		border-radius: 200px;
+		padding: 0;
 	}
 
 	.logo {
@@ -104,12 +134,6 @@
 		padding: 8px;
 		border-radius: 200px;
 		background: rgb(229 231 235);
-	}
-
-	.main-content {
-		display: flex;
-		flex-direction: column;
-		width: 100%;
 	}
 
 	@keyframes fadeUp {

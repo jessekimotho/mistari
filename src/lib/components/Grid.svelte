@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { writable, get, derived } from 'svelte/store';
+	import { writable, derived } from 'svelte/store';
 	import { fade, draw } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import {
@@ -9,9 +9,12 @@
 		foundWords,
 		feedbackMap,
 		trailColors,
-		hintFlashWord
+		hintFlashWord,
+		quizMemory,
+		selectedQuiz
 	} from '$lib/stores/game';
 	import { segmentTrail } from '$lib/utils/segment';
+	import { deriveUsedTiles } from '$lib/utils/deriveUsedTiles';
 	import type { TilePosition } from '$lib/types';
 
 	export let grid: string[][];
@@ -27,28 +30,36 @@
 	let containerEl: HTMLDivElement;
 	const clearingTrail = writable(false);
 	const trailIsAlreadyFound = writable(false);
-	const allDone = writable(false);
 	const selecting = writable(false);
 	let isDragging = false;
 	const poppingTiles = writable<Set<string>>(new Set());
-	const usedTiles = writable<Set<string>>(new Set());
+
+	// Derived tiles from memory
+	const derivedUsedTiles = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) => {
+		if (!$quiz || !$memory[$quiz.id]) return new Set<string>();
+		return deriveUsedTiles(grid, $memory[$quiz.id].foundWords);
+	});
 
 	// Dimensions
 	const tileSpacing = TILE_SIZE + GAP_SIZE;
 	$: svgWidth = displayGrid[0].length * TILE_SIZE + (displayGrid[0].length - 1) * GAP_SIZE;
 	$: svgHeight = displayGrid.length * TILE_SIZE + (displayGrid.length - 1) * GAP_SIZE;
 
-	// Derived letters
+	// Derived remaining letters
 	const derivedRemainingLetters = derived(
-		foundWords,
-		($found) =>
-			new Set(
-				targetWords
-					.filter((w) => !$found.has(w))
-					.join('')
-					.split('')
-			)
+		[selectedQuiz, quizMemory, targetWords],
+		([$quiz, $memory, $targets]) => {
+			if (!$quiz || !$memory[$quiz.id]) return new Set($targets.join('').split(''));
+			const foundSet = new Set($memory[$quiz.id].foundWords);
+			const remaining = $targets.filter((w) => !foundSet.has(w));
+			return new Set(remaining.join('').split(''));
+		}
 	);
+
+	// Quiz completion status
+	const quizComplete = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) => {
+		return $quiz && $memory[$quiz.id]?.completed === true;
+	});
 
 	// Trail segments
 	const trailSegments = derived(selectedTiles, ($tiles) => {
@@ -63,7 +74,6 @@
 		return segments;
 	});
 
-	// Helpers
 	function tileCenterPx(row: number, col: number) {
 		return { x: col * tileSpacing + TILE_SIZE / 2, y: row * tileSpacing + TILE_SIZE / 2 };
 	}
@@ -71,9 +81,8 @@
 		return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 	}
 
-	// Update trail
 	function updateTrail(row: number, col: number) {
-		const trail = get(selectedTiles);
+		const trail = $selectedTiles;
 		const last = trail.at(-1);
 		const idx = trail.findIndex((p) => p.row === row && p.col === col);
 		let newTrail;
@@ -85,22 +94,10 @@
 		const word = newTrail.map((p) => displayGrid[p.row][p.col]).join('');
 		currentWord.set(word);
 
-		if (targetWords.includes(word)) {
-			if (!get(foundWords).has(word)) {
-				foundWords.update((s) => {
-					const next = new Set([...s, word]);
-					if (next.size === targetWords.length) {
-						allDone.set(true);
-						rearrangeFinalWord(word);
-					}
-					return next;
-				});
-				const used = get(usedTiles);
-				newTrail.forEach((p) => used.add(`${p.row}-${p.col}`));
-				usedTiles.set(new Set(used));
+		if ($targetWords.includes(word)) {
+			if (!$foundWords.has(word)) {
+				foundWords.update((s) => new Set([...s, word]));
 				triggerPopEffect(newTrail);
-				isDragging = false;
-				selecting.set(false);
 			} else {
 				triggerAlreadyFoundTrailEffect(newTrail);
 				flashWordHint(word);
@@ -108,7 +105,6 @@
 		}
 	}
 
-	// Effects
 	function triggerAlreadyFoundTrailEffect(trail: TilePosition[]) {
 		trailIsAlreadyFound.set(true);
 		setTimeout(() => {
@@ -117,10 +113,12 @@
 			trailIsAlreadyFound.set(false);
 		}, 600);
 	}
+
 	function flashWordHint(word: string) {
 		hintFlashWord.set(word);
 		setTimeout(() => hintFlashWord.set(null), 800);
 	}
+
 	function triggerPopEffect(trail: TilePosition[]) {
 		const keys = trail.map((p) => `${p.row}-${p.col}`);
 		poppingTiles.set(new Set(keys));
@@ -132,15 +130,6 @@
 		}, 350);
 	}
 
-	// Final rearrange
-	function rearrangeFinalWord(word: string) {
-		const newGrid = displayGrid.map((r) => [...r]);
-		const mid = Math.floor(newGrid.length / 2);
-		for (let i = 0; i < word.length && i < newGrid[mid].length; i++) newGrid[mid][i] = word[i];
-		displayGrid = newGrid;
-	}
-
-	// Pointer handlers
 	function onHitboxPointerDown(e: PointerEvent, row: number, col: number) {
 		e.preventDefault();
 		containerEl.setPointerCapture(e.pointerId);
@@ -151,7 +140,8 @@
 
 	function handleContainerPointerMove(e: PointerEvent) {
 		e.preventDefault();
-		if (!isDragging || !get(selecting)) return;
+		if (!isDragging || !$selecting) return;
+
 		const rect = containerEl.getBoundingClientRect();
 		const scaledX = e.clientX - rect.left;
 		const scaledY = e.clientY - rect.top;
@@ -185,6 +175,18 @@
 		window.addEventListener('mousedown', clickAway);
 		return () => window.removeEventListener('mousedown', clickAway);
 	});
+
+	// Reset UI on grid change
+	$: {
+		displayGrid = grid.map((row) => [...row]);
+		clearingTrail.set(false);
+		trailIsAlreadyFound.set(false);
+		selecting.set(false);
+		isDragging = false;
+		poppingTiles.set(new Set());
+		selectedTiles.set([]);
+		currentWord.set('');
+	}
 </script>
 
 <div
@@ -195,7 +197,7 @@
 	on:pointerup={onContainerPointerUp}
 	on:pointercancel={onContainerPointerUp}
 >
-	{#if $allDone}
+	<!-- {#if quizComplete}
 		<div
 			in:fade
 			class="fixed inset-0 z-10 flex flex-col items-center justify-center bg-green-600 text-white"
@@ -203,7 +205,7 @@
 			<div class="emoji text-4xl">🎉</div>
 			You found all the words!
 		</div>
-	{/if}
+	{/if} -->
 
 	<!-- Background Tiles -->
 	<div
@@ -216,9 +218,9 @@
 				<div
 					class="tile rounded bg-gray-200"
 					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
-					class:bg-green-500={get(feedbackMap)[`${r}-${c}`] === 'correct'}
-					class:bg-red-500={get(feedbackMap)[`${r}-${c}`] === 'wrong'}
-					class:bg-blue-400={get(usedTiles).has(`${r}-${c}`)}
+					class:bg-green-500={$feedbackMap[`${r}-${c}`] === 'correct'}
+					class:bg-red-500={$feedbackMap[`${r}-${c}`] === 'wrong'}
+					class:bg-blue-400={$derivedUsedTiles.has(`${r}-${c}`)}
 					class:opacity-0={!$derivedRemainingLetters.has(letter)}
 				></div>
 			{/each}
@@ -283,9 +285,9 @@
 					class="hitbox"
 					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
 					class:cursor-pointer={$derivedRemainingLetters.has(letter) &&
-						!get(usedTiles).has(`${r}-${c}`)}
+						!$derivedUsedTiles.has(`${r}-${c}`)}
 					class:cursor-default={!$derivedRemainingLetters.has(letter) ||
-						get(usedTiles).has(`${r}-${c}`)}
+						$derivedUsedTiles.has(`${r}-${c}`)}
 					on:pointerdown={(e) => onHitboxPointerDown(e, r, c)}
 				></div>
 			{/each}

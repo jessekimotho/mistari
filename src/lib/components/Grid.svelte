@@ -83,14 +83,26 @@
 
 	function updateTrail(row: number, col: number) {
 		const trail = $selectedTiles;
+		const key = `${row}-${col}`;
+		const letter = displayGrid[row][col];
+
+		// Only block hidden tiles
+		if (!$derivedRemainingLetters.has(letter)) return;
+
 		const last = trail.at(-1);
 		const idx = trail.findIndex((p) => p.row === row && p.col === col);
 		let newTrail;
-		if (idx >= 0) newTrail = trail.slice(0, idx + 1);
-		else if (!last || isAdjacent(last, { row, col })) newTrail = [...trail, { row, col }];
-		else newTrail = [{ row, col }];
+
+		if (idx >= 0) {
+			newTrail = trail.slice(0, idx + 1);
+		} else if (!last || isAdjacent(last, { row, col })) {
+			newTrail = [...trail, { row, col }];
+		} else {
+			newTrail = [{ row, col }];
+		}
 
 		selectedTiles.set(newTrail);
+
 		const word = newTrail.map((p) => displayGrid[p.row][p.col]).join('');
 		currentWord.set(word);
 
@@ -132,6 +144,13 @@
 
 	function onHitboxPointerDown(e: PointerEvent, row: number, col: number) {
 		e.preventDefault();
+
+		const key = `${row}-${col}`;
+		const letter = displayGrid[row][col];
+		if (!$derivedRemainingLetters.has(letter) || $derivedUsedTiles.has(key)) {
+			return; // ignore interaction
+		}
+
 		containerEl.setPointerCapture(e.pointerId);
 		isDragging = true;
 		selecting.set(true);

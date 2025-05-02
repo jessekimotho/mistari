@@ -19,49 +19,61 @@
 	import type { TilePosition } from '$lib/types';
 
 	export let grid: string[][];
-	let displayGrid = grid.map((row) => [...row]);
 
-	export const SWIPE_THRESHOLD_RATIO = 0.3;
-	export const TRAIL_LINE_WIDTH = 64;
-	export const TILE_SIZE = 84;
-	export const GAP_SIZE = 8;
-	export const SWIPE_HITBOX_MARGIN = 12;
+	// UI constants
+	const SWIPE_THRESHOLD_RATIO = 0.3;
+	const TRAIL_LINE_WIDTH = 64;
+	const TILE_SIZE = 84;
+	const GAP_SIZE = 8;
+	const SWIPE_HITBOX_MARGIN = 12;
+
+	const tileSpacing = TILE_SIZE + GAP_SIZE;
 
 	let containerEl: HTMLDivElement;
+	let isDragging = false;
+
 	const clearingTrail = writable(false);
 	const trailIsAlreadyFound = writable(false);
 	const trailJustFound = writable(false);
 	const trailEffectId = writable(0);
 	const freezeTrail = writable(false);
 	const selecting = writable(false);
-	let isDragging = false;
-	const poppingTiles = writable<Set<string>>(new Set());
+	const poppingTiles = writable(new Set<string>());
 
-	const derivedUsedTiles = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) => {
-		if (!$quiz || !$memory[$quiz.id]) return new Set<string>();
-		return deriveUsedTiles(grid, $memory[$quiz.id].foundWords);
-	});
+	$: svgWidth = grid[0].length * TILE_SIZE + (grid[0].length - 1) * GAP_SIZE;
+	$: svgHeight = grid.length * TILE_SIZE + (grid.length - 1) * GAP_SIZE;
 
-	const tileSpacing = TILE_SIZE + GAP_SIZE;
-	$: svgWidth = displayGrid[0].length * TILE_SIZE + (displayGrid[0].length - 1) * GAP_SIZE;
-	$: svgHeight = displayGrid.length * TILE_SIZE + (displayGrid.length - 1) * GAP_SIZE;
+	const usedTiles = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) =>
+		$quiz && $memory[$quiz.id]
+			? deriveUsedTiles(grid, $memory[$quiz.id].foundWords)
+			: new Set<string>()
+	);
 
-	const derivedRemainingLetters = derived(
+	const remainingLetters = derived(
 		[selectedQuiz, quizMemory, targetWords],
 		([$quiz, $memory, $targets]) => {
 			if (!$quiz || !$memory[$quiz.id]) return new Set($targets.join('').split(''));
-			const foundSet = new Set($memory[$quiz.id].foundWords);
-			const remaining = $targets.filter((w) => !foundSet.has(w));
-			return new Set(remaining.join('').split(''));
+			const found = new Set($memory[$quiz.id].foundWords);
+			return new Set(
+				$targets
+					.filter((w) => !found.has(w))
+					.join('')
+					.split('')
+			);
 		}
 	);
 
-	const quizComplete = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) => {
-		return $quiz && $memory[$quiz.id]?.completed === true;
-	});
+	const quizComplete = derived(
+		[selectedQuiz, quizMemory],
+		([$quiz, $memory]) => $quiz && $memory[$quiz.id]?.completed === true
+	);
 
 	const trailSegments = derived(selectedTiles, ($tiles) => {
-		const segments = segmentTrail($tiles).flatMap((segment, i) => {
+		if ($tiles.length === 1) {
+			const only = $tiles[0];
+			return [{ from: only, to: only, color: trailColors[0] }];
+		}
+		return segmentTrail($tiles).flatMap((segment, i) => {
 			const color = trailColors[i % trailColors.length];
 			return segment.slice(0, -1).map((from, j) => ({
 				from,
@@ -69,54 +81,47 @@
 				color
 			}));
 		});
-		if ($tiles.length === 1) {
-			const only = $tiles[0];
-			segments.push({ from: only, to: only, color: trailColors[0] });
-		}
-		return segments;
 	});
 
-	function tileCenterPx(row: number, col: number) {
-		return { x: col * tileSpacing + TILE_SIZE / 2, y: row * tileSpacing + TILE_SIZE / 2 };
-	}
-	function isAdjacent(a: TilePosition, b: TilePosition) {
-		return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
-	}
+	// Helpers
+	const center = (r: number, c: number) => ({
+		x: c * tileSpacing + TILE_SIZE / 2,
+		y: r * tileSpacing + TILE_SIZE / 2
+	});
+	const isAdjacent = (a: TilePosition, b: TilePosition) =>
+		Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 
-	async function updateTrail(row: number, col: number) {
+	async function updateTrail(r: number, c: number) {
 		if (get(freezeTrail)) return;
+		const letter = grid[r][c];
+		if (!get(remainingLetters).has(letter)) return;
 
 		const trail = get(selectedTiles);
-		const letter = displayGrid[row][col];
-		if (!get(derivedRemainingLetters).has(letter)) return;
-
 		const last = trail.at(-1);
-		const idx = trail.findIndex((p) => p.row === row && p.col === col);
-		let newTrail;
-
-		if (idx >= 0) {
-			newTrail = trail.slice(0, idx + 1);
-		} else if (!last || isAdjacent(last, { row, col })) {
-			newTrail = [...trail, { row, col }];
-		} else {
-			newTrail = [{ row, col }];
-		}
+		const idx = trail.findIndex((p) => p.row === r && p.col === c);
+		let newTrail =
+			idx >= 0
+				? trail.slice(0, idx + 1)
+				: !last || isAdjacent(last, { row: r, col: c })
+					? [...trail, { row: r, col: c }]
+					: [{ row: r, col: c }];
 
 		selectedTiles.set(newTrail);
-		const word = newTrail.map((p) => displayGrid[p.row][p.col]).join('');
+		const word = newTrail.map((p) => grid[p.row][p.col]).join('');
 		currentWord.set(word);
 
 		if (get(targetWords).includes(word)) {
 			if (!get(foundWords).has(word)) {
-				foundWords.update((s) => new Set([...s, word]));
+				foundWords.update((set) => new Set([...set, word]));
 				trailJustFound.set(true);
 				freezeTrail.set(true);
-				trailEffectId.update((n) => n + 1);
+				trailEffectId.update((id) => id + 1);
 				await tick();
 				triggerPopEffect(newTrail);
 			} else {
 				triggerAlreadyFoundTrailEffect(newTrail);
-				flashWordHint(word);
+				hintFlashWord.set(word);
+				setTimeout(() => hintFlashWord.set(null), 800);
 			}
 		}
 	}
@@ -130,18 +135,9 @@
 		}, 600);
 	}
 
-	function flashWordHint(word: string) {
-		hintFlashWord.set(word);
-		setTimeout(() => hintFlashWord.set(null), 800);
-	}
-
 	async function triggerPopEffect(trail: TilePosition[]) {
-		const keys = trail.map((p) => `${p.row}-${p.col}`);
-		poppingTiles.set(new Set(keys));
-
-		// ✅ Wait for DOM to render trail before clearing it
+		poppingTiles.set(new Set(trail.map((p) => `${p.row}-${p.col}`)));
 		await tick();
-
 		setTimeout(() => {
 			poppingTiles.set(new Set());
 			selectedTiles.set([]);
@@ -152,10 +148,10 @@
 		}, 600);
 	}
 
-	function onHitboxPointerDown(e: PointerEvent, row: number, col: number) {
+	function onPointerDown(e: PointerEvent, r: number, c: number) {
 		e.preventDefault();
-		const letter = displayGrid[row][col];
-		if (!get(derivedRemainingLetters).has(letter)) {
+		const letter = grid[r][c];
+		if (!get(remainingLetters).has(letter)) {
 			selectedTiles.set([]);
 			currentWord.set('');
 			selecting.set(false);
@@ -165,41 +161,42 @@
 		containerEl.setPointerCapture(e.pointerId);
 		isDragging = true;
 		selecting.set(true);
-		updateTrail(row, col);
+		updateTrail(r, c);
 	}
 
-	function handleContainerPointerMove(e: PointerEvent) {
-		e.preventDefault();
+	function onPointerMove(e: PointerEvent) {
 		if (!isDragging || !get(selecting)) return;
 		const rect = containerEl.getBoundingClientRect();
-		const scaledX = e.clientX - rect.left;
-		const scaledY = e.clientY - rect.top;
 		const scale = rect.width / svgWidth;
-		const x = scaledX / scale;
-		const y = scaledY / scale;
-		const col = Math.floor(x / tileSpacing);
-		const row = Math.floor(y / tileSpacing);
-		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) return;
-		const offX = x % tileSpacing;
-		const offY = y % tileSpacing;
+		const x = (e.clientX - rect.left) / scale;
+		const y = (e.clientY - rect.top) / scale;
+		const c = Math.floor(x / tileSpacing);
+		const r = Math.floor(y / tileSpacing);
+		const offX = x % tileSpacing,
+			offY = y % tileSpacing;
+
 		if (
-			offX < SWIPE_HITBOX_MARGIN ||
-			offY < SWIPE_HITBOX_MARGIN ||
-			offX > TILE_SIZE - SWIPE_HITBOX_MARGIN ||
-			offY > TILE_SIZE - SWIPE_HITBOX_MARGIN
-		)
-			return;
-		updateTrail(row, col);
+			r >= 0 &&
+			r < grid.length &&
+			c >= 0 &&
+			c < grid[0].length &&
+			offX > SWIPE_HITBOX_MARGIN &&
+			offY > SWIPE_HITBOX_MARGIN &&
+			offX < TILE_SIZE - SWIPE_HITBOX_MARGIN &&
+			offY < TILE_SIZE - SWIPE_HITBOX_MARGIN
+		) {
+			updateTrail(r, c);
+		}
 	}
 
-	function onContainerPointerUp(e: PointerEvent) {
+	function onPointerUp(e: PointerEvent) {
 		containerEl.releasePointerCapture(e.pointerId);
 		isDragging = false;
 		selecting.set(false);
 	}
 
 	onMount(() => {
-		const clickAway = (e: MouseEvent) => {
+		const cancel = (e: MouseEvent) => {
 			if (!(e.target as HTMLElement).closest('.tile, .hitbox')) {
 				selectedTiles.set([]);
 				currentWord.set('');
@@ -207,57 +204,32 @@
 				isDragging = false;
 			}
 		};
-		window.addEventListener('mousedown', clickAway);
-		return () => window.removeEventListener('mousedown', clickAway);
+		window.addEventListener('mousedown', cancel);
+		return () => window.removeEventListener('mousedown', cancel);
 	});
-
-	$: if (grid) {
-		displayGrid = grid.map((row) => [...row]);
-		clearingTrail.set(false);
-		trailIsAlreadyFound.set(false);
-		selecting.set(false);
-		isDragging = false;
-		poppingTiles.set(new Set());
-		if (!get(freezeTrail)) {
-			selectedTiles.set([]);
-			currentWord.set('');
-		}
-	}
 </script>
 
 <div
 	bind:this={containerEl}
 	class="relative"
 	style="touch-action: none; width: {svgWidth}px; height: {svgHeight}px;"
-	on:pointermove={handleContainerPointerMove}
-	on:pointerup={onContainerPointerUp}
-	on:pointercancel={onContainerPointerUp}
+	on:pointermove={onPointerMove}
+	on:pointerup={onPointerUp}
+	on:pointercancel={onPointerUp}
 >
-	<!-- {#if quizComplete}
-		<div
-			in:fade
-			class="fixed inset-0 z-10 flex flex-col items-center justify-center bg-green-600 text-white"
-		>
-			<div class="emoji text-4xl">🎉</div>
-			You found all the words!
-		</div>
-	{/if} -->
-
-	<!-- Background Tiles -->
+	<!-- Background tiles -->
 	<div
 		class="absolute inset-0 grid"
-		style="grid-template-columns: repeat({displayGrid[0]
-			.length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
 	>
-		{#each displayGrid as row, r}
+		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
 					class="tile rounded bg-gray-200"
 					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
 					class:bg-green-500={$feedbackMap[`${r}-${c}`] === 'correct'}
 					class:bg-red-500={$feedbackMap[`${r}-${c}`] === 'wrong'}
-					class:bg-blue-400={$derivedUsedTiles.has(`${r}-${c}`)}
-					class:opacity-0={!$derivedRemainingLetters.has(letter)}
+					class:opacity-0={!$remainingLetters.has(letter)}
 				></div>
 			{/each}
 		{/each}
@@ -266,8 +238,8 @@
 	<!-- Trail SVG -->
 	<svg class="pointer-events-none absolute inset-0" width={svgWidth} height={svgHeight}>
 		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}-${$trailEffectId}`)}
-			{@const a = tileCenterPx(from.row, from.col)}
-			{@const b = tileCenterPx(to.row, to.col)}
+			{@const a = center(from.row, from.col)}
+			{@const b = center(to.row, to.col)}
 			<line
 				x1={a.x}
 				y1={a.y}
@@ -289,18 +261,17 @@
 	<!-- Letters -->
 	<div
 		class="pointer-events-none absolute inset-0 grid"
-		style="grid-template-columns: repeat({displayGrid[0]
-			.length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
 	>
-		{#each displayGrid as row, r}
+		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
 					class="flex items-center justify-center font-bold select-none"
 					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px; font-size: {TILE_SIZE * 0.5}px;"
 					class:text-white={$selectedTiles.some((p) => p.row === r && p.col === c)}
 					class:text-black={!$selectedTiles.some((p) => p.row === r && p.col === c) &&
-						$derivedRemainingLetters.has(letter)}
-					class:text-transparent={!$derivedRemainingLetters.has(letter)}
+						$remainingLetters.has(letter)}
+					class:text-transparent={!$remainingLetters.has(letter)}
 					class:animate-pop={$poppingTiles.has(`${r}-${c}`)}
 				>
 					{letter}
@@ -312,19 +283,16 @@
 	<!-- Hitboxes -->
 	<div
 		class="absolute inset-0 grid"
-		style="grid-template-columns: repeat({displayGrid[0]
-			.length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
 	>
-		{#each displayGrid as row, r}
+		{#each grid as row, r}
 			{#each row as letter, c}
 				<div
 					class="hitbox"
 					style="width: {TILE_SIZE}px; height: {TILE_SIZE}px;"
-					class:cursor-pointer={$derivedRemainingLetters.has(letter) &&
-						!$derivedUsedTiles.has(`${r}-${c}`)}
-					class:cursor-default={!$derivedRemainingLetters.has(letter) ||
-						$derivedUsedTiles.has(`${r}-${c}`)}
-					on:pointerdown={(e) => onHitboxPointerDown(e, r, c)}
+					class:cursor-pointer={$remainingLetters.has(letter) && !$usedTiles.has(`${r}-${c}`)}
+					class:cursor-default={!$remainingLetters.has(letter) || $usedTiles.has(`${r}-${c}`)}
+					on:pointerdown={(e) => onPointerDown(e, r, c)}
 				></div>
 			{/each}
 		{/each}
@@ -346,6 +314,7 @@
 	.animate-pop {
 		animation: pop 350ms ease-in-out;
 	}
+
 	@keyframes pulseStroke {
 		0% {
 			stroke-width: var(--trail-width);
@@ -360,6 +329,7 @@
 	.pulse-stroke {
 		animation: pulseStroke 600ms ease-in-out;
 	}
+
 	@keyframes fadeOutTrail {
 		0% {
 			opacity: 1;

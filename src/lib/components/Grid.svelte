@@ -25,6 +25,7 @@
 	export const TRAIL_LINE_WIDTH = 64;
 	export const TILE_SIZE = 84;
 	export const GAP_SIZE = 8;
+	export const SWIPE_HITBOX_MARGIN = 12; // pixels — adjust as needed
 
 	// State
 	let containerEl: HTMLDivElement;
@@ -147,10 +148,17 @@
 
 		const key = `${row}-${col}`;
 		const letter = displayGrid[row][col];
-		if (!$derivedRemainingLetters.has(letter) || $derivedUsedTiles.has(key)) {
-			return; // ignore interaction
+
+		if (!$derivedRemainingLetters.has(letter)) {
+			// Hidden tile clicked — reset the trail
+			selectedTiles.set([]);
+			currentWord.set('');
+			selecting.set(false);
+			isDragging = false;
+			return;
 		}
 
+		// Valid letter (even if already used)
 		containerEl.setPointerCapture(e.pointerId);
 		isDragging = true;
 		selecting.set(true);
@@ -167,12 +175,22 @@
 		const scale = rect.width / svgWidth;
 		const x = scaledX / scale;
 		const y = scaledY / scale;
+
 		const col = Math.floor(x / tileSpacing);
 		const row = Math.floor(y / tileSpacing);
+
+		// Skip if out of bounds
 		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) return;
+
+		// Compute pointer offset within the tile
 		const offX = x % tileSpacing;
 		const offY = y % tileSpacing;
-		if (offX > TILE_SIZE || offY > TILE_SIZE) return;
+
+		// Margin cutoff for swipe hitbox
+		const margin = SWIPE_HITBOX_MARGIN;
+		if (offX < margin || offY < margin || offX > TILE_SIZE - margin || offY > TILE_SIZE - margin)
+			return;
+
 		updateTrail(row, col);
 	}
 

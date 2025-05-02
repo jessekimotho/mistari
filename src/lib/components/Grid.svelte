@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { writable, derived } from 'svelte/store';
-	import { fade, draw } from 'svelte/transition';
+	import { writable, derived, get } from 'svelte/store';
+	import { draw } from 'svelte/transition';
+	import { tick } from 'svelte';
 	import { onMount } from 'svelte';
 	import {
 		selectedTiles,
@@ -20,33 +21,31 @@
 	export let grid: string[][];
 	let displayGrid = grid.map((row) => [...row]);
 
-	// Config
 	export const SWIPE_THRESHOLD_RATIO = 0.3;
 	export const TRAIL_LINE_WIDTH = 64;
 	export const TILE_SIZE = 84;
 	export const GAP_SIZE = 8;
-	export const SWIPE_HITBOX_MARGIN = 12; // pixels — adjust as needed
+	export const SWIPE_HITBOX_MARGIN = 12;
 
-	// State
 	let containerEl: HTMLDivElement;
 	const clearingTrail = writable(false);
 	const trailIsAlreadyFound = writable(false);
+	const trailJustFound = writable(false);
+	const trailEffectId = writable(0);
+	const freezeTrail = writable(false);
 	const selecting = writable(false);
 	let isDragging = false;
 	const poppingTiles = writable<Set<string>>(new Set());
 
-	// Derived tiles from memory
 	const derivedUsedTiles = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) => {
 		if (!$quiz || !$memory[$quiz.id]) return new Set<string>();
 		return deriveUsedTiles(grid, $memory[$quiz.id].foundWords);
 	});
 
-	// Dimensions
 	const tileSpacing = TILE_SIZE + GAP_SIZE;
 	$: svgWidth = displayGrid[0].length * TILE_SIZE + (displayGrid[0].length - 1) * GAP_SIZE;
 	$: svgHeight = displayGrid.length * TILE_SIZE + (displayGrid.length - 1) * GAP_SIZE;
 
-	// Derived remaining letters
 	const derivedRemainingLetters = derived(
 		[selectedQuiz, quizMemory, targetWords],
 		([$quiz, $memory, $targets]) => {
@@ -57,16 +56,18 @@
 		}
 	);
 
-	// Quiz completion status
 	const quizComplete = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) => {
 		return $quiz && $memory[$quiz.id]?.completed === true;
 	});
 
-	// Trail segments
 	const trailSegments = derived(selectedTiles, ($tiles) => {
 		const segments = segmentTrail($tiles).flatMap((segment, i) => {
 			const color = trailColors[i % trailColors.length];
-			return segment.slice(0, -1).map((from, j) => ({ from, to: segment[j + 1], color }));
+			return segment.slice(0, -1).map((from, j) => ({
+				from,
+				to: segment[j + 1],
+				color
+			}));
 		});
 		if ($tiles.length === 1) {
 			const only = $tiles[0];
@@ -82,13 +83,12 @@
 		return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 	}
 
-	function updateTrail(row: number, col: number) {
-		const trail = $selectedTiles;
-		const key = `${row}-${col}`;
-		const letter = displayGrid[row][col];
+	async function updateTrail(row: number, col: number) {
+		if (get(freezeTrail)) return;
 
-		// Only block hidden tiles
-		if (!$derivedRemainingLetters.has(letter)) return;
+		const trail = get(selectedTiles);
+		const letter = displayGrid[row][col];
+		if (!get(derivedRemainingLetters).has(letter)) return;
 
 		const last = trail.at(-1);
 		const idx = trail.findIndex((p) => p.row === row && p.col === col);
@@ -103,13 +103,16 @@
 		}
 
 		selectedTiles.set(newTrail);
-
 		const word = newTrail.map((p) => displayGrid[p.row][p.col]).join('');
 		currentWord.set(word);
 
-		if ($targetWords.includes(word)) {
-			if (!$foundWords.has(word)) {
+		if (get(targetWords).includes(word)) {
+			if (!get(foundWords).has(word)) {
 				foundWords.update((s) => new Set([...s, word]));
+				trailJustFound.set(true);
+				freezeTrail.set(true);
+				trailEffectId.update((n) => n + 1);
+				await tick();
 				triggerPopEffect(newTrail);
 			} else {
 				triggerAlreadyFoundTrailEffect(newTrail);
@@ -132,33 +135,33 @@
 		setTimeout(() => hintFlashWord.set(null), 800);
 	}
 
-	function triggerPopEffect(trail: TilePosition[]) {
+	async function triggerPopEffect(trail: TilePosition[]) {
 		const keys = trail.map((p) => `${p.row}-${p.col}`);
 		poppingTiles.set(new Set(keys));
+
+		// ✅ Wait for DOM to render trail before clearing it
+		await tick();
+
 		setTimeout(() => {
 			poppingTiles.set(new Set());
 			selectedTiles.set([]);
 			currentWord.set('');
 			selecting.set(false);
-		}, 350);
+			trailJustFound.set(false);
+			freezeTrail.set(false);
+		}, 600);
 	}
 
 	function onHitboxPointerDown(e: PointerEvent, row: number, col: number) {
 		e.preventDefault();
-
-		const key = `${row}-${col}`;
 		const letter = displayGrid[row][col];
-
-		if (!$derivedRemainingLetters.has(letter)) {
-			// Hidden tile clicked — reset the trail
+		if (!get(derivedRemainingLetters).has(letter)) {
 			selectedTiles.set([]);
 			currentWord.set('');
 			selecting.set(false);
 			isDragging = false;
 			return;
 		}
-
-		// Valid letter (even if already used)
 		containerEl.setPointerCapture(e.pointerId);
 		isDragging = true;
 		selecting.set(true);
@@ -167,30 +170,25 @@
 
 	function handleContainerPointerMove(e: PointerEvent) {
 		e.preventDefault();
-		if (!isDragging || !$selecting) return;
-
+		if (!isDragging || !get(selecting)) return;
 		const rect = containerEl.getBoundingClientRect();
 		const scaledX = e.clientX - rect.left;
 		const scaledY = e.clientY - rect.top;
 		const scale = rect.width / svgWidth;
 		const x = scaledX / scale;
 		const y = scaledY / scale;
-
 		const col = Math.floor(x / tileSpacing);
 		const row = Math.floor(y / tileSpacing);
-
-		// Skip if out of bounds
 		if (row < 0 || row >= displayGrid.length || col < 0 || col >= displayGrid[0].length) return;
-
-		// Compute pointer offset within the tile
 		const offX = x % tileSpacing;
 		const offY = y % tileSpacing;
-
-		// Margin cutoff for swipe hitbox
-		const margin = SWIPE_HITBOX_MARGIN;
-		if (offX < margin || offY < margin || offX > TILE_SIZE - margin || offY > TILE_SIZE - margin)
+		if (
+			offX < SWIPE_HITBOX_MARGIN ||
+			offY < SWIPE_HITBOX_MARGIN ||
+			offX > TILE_SIZE - SWIPE_HITBOX_MARGIN ||
+			offY > TILE_SIZE - SWIPE_HITBOX_MARGIN
+		)
 			return;
-
 		updateTrail(row, col);
 	}
 
@@ -213,16 +211,17 @@
 		return () => window.removeEventListener('mousedown', clickAway);
 	});
 
-	// Reset UI on grid change
-	$: {
+	$: if (grid) {
 		displayGrid = grid.map((row) => [...row]);
 		clearingTrail.set(false);
 		trailIsAlreadyFound.set(false);
 		selecting.set(false);
 		isDragging = false;
 		poppingTiles.set(new Set());
-		selectedTiles.set([]);
-		currentWord.set('');
+		if (!get(freezeTrail)) {
+			selectedTiles.set([]);
+			currentWord.set('');
+		}
 	}
 </script>
 
@@ -266,7 +265,7 @@
 
 	<!-- Trail SVG -->
 	<svg class="pointer-events-none absolute inset-0" width={svgWidth} height={svgHeight}>
-		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}`)}
+		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}-${$trailEffectId}`)}
 			{@const a = tileCenterPx(from.row, from.col)}
 			{@const b = tileCenterPx(to.row, to.col)}
 			<line
@@ -274,11 +273,11 @@
 				y1={a.y}
 				x2={b.x}
 				y2={b.y}
-				stroke={$trailIsAlreadyFound ? 'limegreen' : color}
+				stroke={$trailIsAlreadyFound || $trailJustFound ? 'limegreen' : color}
 				stroke-width={TRAIL_LINE_WIDTH}
 				stroke-linecap="round"
 				vector-effect="non-scaling-stroke"
-				class:pulse-stroke={$trailIsAlreadyFound}
+				class:pulse-stroke={$trailIsAlreadyFound || $trailJustFound}
 				class:fade-out-trail={$clearingTrail}
 				in:draw={{ duration: 250 }}
 				out:draw={{ duration: 200 }}

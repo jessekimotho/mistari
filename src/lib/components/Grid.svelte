@@ -19,8 +19,9 @@
 	import type { TilePosition } from '$lib/types';
 
 	export let grid: string[][];
+	const rows = grid.length;
+	const cols = grid[0].length;
 
-	// UI constants
 	const SWIPE_THRESHOLD_RATIO = 0.3;
 	const TRAIL_LINE_WIDTH = 64;
 	const TILE_SIZE = 84;
@@ -40,27 +41,30 @@
 	const selecting = writable(false);
 	const poppingTiles = writable(new Set<string>());
 
-	$: svgWidth = grid[0].length * TILE_SIZE + (grid[0].length - 1) * GAP_SIZE;
-	$: svgHeight = grid.length * TILE_SIZE + (grid.length - 1) * GAP_SIZE;
+	$: svgWidth = cols * TILE_SIZE + (cols - 1) * GAP_SIZE;
+	$: svgHeight = rows * TILE_SIZE + (rows - 1) * GAP_SIZE;
 
-	const usedTiles = derived([selectedQuiz, quizMemory], ([$quiz, $memory]) =>
-		$quiz && $memory[$quiz.id]
-			? deriveUsedTiles(grid, $memory[$quiz.id].foundWords)
-			: new Set<string>()
+	const usedTiles = derived(
+		[selectedQuiz, quizMemory],
+		([$quiz, $memory], set) => {
+			if (!$quiz || !$memory[$quiz.id]) return set(new Set());
+			set(deriveUsedTiles(grid, $memory[$quiz.id].foundWords));
+		},
+		new Set<string>()
 	);
 
 	const remainingLetters = derived(
 		[selectedQuiz, quizMemory, targetWords],
-		([$quiz, $memory, $targets]) => {
-			if (!$quiz || !$memory[$quiz.id]) return new Set($targets.join('').split(''));
+		([$quiz, $memory, $targets], set) => {
+			if (!$quiz || !$memory[$quiz.id]) return set(new Set($targets.join('').split('')));
 			const found = new Set($memory[$quiz.id].foundWords);
-			return new Set(
-				$targets
-					.filter((w) => !found.has(w))
-					.join('')
-					.split('')
-			);
-		}
+			const letters = $targets
+				.filter((w) => !found.has(w))
+				.join('')
+				.split('');
+			set(new Set(letters));
+		},
+		new Set<string>()
 	);
 
 	const quizComplete = derived(
@@ -83,20 +87,25 @@
 		});
 	});
 
-	// Helpers
 	const center = (r: number, c: number) => ({
 		x: c * tileSpacing + TILE_SIZE / 2,
 		y: r * tileSpacing + TILE_SIZE / 2
 	});
+
 	const isAdjacent = (a: TilePosition, b: TilePosition) =>
 		Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 
 	async function updateTrail(r: number, c: number) {
 		if (get(freezeTrail)) return;
-		const letter = grid[r][c];
-		if (!get(remainingLetters).has(letter)) return;
 
+		const remaining = get(remainingLetters);
 		const trail = get(selectedTiles);
+		const targets = get(targetWords);
+		const found = get(foundWords);
+		const letter = grid[r][c];
+
+		if (!remaining.has(letter)) return;
+
 		const last = trail.at(-1);
 		const idx = trail.findIndex((p) => p.row === r && p.col === c);
 		let newTrail =
@@ -110,12 +119,12 @@
 		const word = newTrail.map((p) => grid[p.row][p.col]).join('');
 		currentWord.set(word);
 
-		if (get(targetWords).includes(word)) {
-			if (!get(foundWords).has(word)) {
-				foundWords.update((set) => new Set([...set, word]));
+		if (targets.includes(word)) {
+			if (!found.has(word)) {
+				foundWords.update((s) => new Set([...s, word]));
 				trailJustFound.set(true);
 				freezeTrail.set(true);
-				trailEffectId.update((id) => id + 1);
+				trailEffectId.update((n) => n + 1);
 				await tick();
 				triggerPopEffect(newTrail);
 			} else {
@@ -172,17 +181,17 @@
 		const y = (e.clientY - rect.top) / scale;
 		const c = Math.floor(x / tileSpacing);
 		const r = Math.floor(y / tileSpacing);
-		const offX = x % tileSpacing,
-			offY = y % tileSpacing;
+		const offX = x % tileSpacing;
+		const offY = y % tileSpacing;
 
 		if (
 			r >= 0 &&
-			r < grid.length &&
+			r < rows &&
 			c >= 0 &&
-			c < grid[0].length &&
+			c < cols &&
 			offX > SWIPE_HITBOX_MARGIN &&
-			offY > SWIPE_HITBOX_MARGIN &&
 			offX < TILE_SIZE - SWIPE_HITBOX_MARGIN &&
+			offY > SWIPE_HITBOX_MARGIN &&
 			offY < TILE_SIZE - SWIPE_HITBOX_MARGIN
 		) {
 			updateTrail(r, c);
@@ -217,10 +226,10 @@
 	on:pointerup={onPointerUp}
 	on:pointercancel={onPointerUp}
 >
-	<!-- Background tiles -->
+	<!-- Background Tiles -->
 	<div
 		class="absolute inset-0 grid"
-		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+		style="grid-template-columns: repeat({cols}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
 	>
 		{#each grid as row, r}
 			{#each row as letter, c}
@@ -237,7 +246,7 @@
 
 	<!-- Trail SVG -->
 	<svg class="pointer-events-none absolute inset-0" width={svgWidth} height={svgHeight}>
-		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}-${$trailEffectId}`)}
+		{#each $trailSegments as { from, to, color } (`${from.row}-${from.col}-${to.row}-${to.col}`)}
 			{@const a = center(from.row, from.col)}
 			{@const b = center(to.row, to.col)}
 			<line
@@ -261,7 +270,7 @@
 	<!-- Letters -->
 	<div
 		class="pointer-events-none absolute inset-0 grid"
-		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+		style="grid-template-columns: repeat({cols}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
 	>
 		{#each grid as row, r}
 			{#each row as letter, c}
@@ -283,7 +292,7 @@
 	<!-- Hitboxes -->
 	<div
 		class="absolute inset-0 grid"
-		style="grid-template-columns: repeat({grid[0].length}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
+		style="grid-template-columns: repeat({cols}, {TILE_SIZE}px); gap: {GAP_SIZE}px;"
 	>
 		{#each grid as row, r}
 			{#each row as letter, c}

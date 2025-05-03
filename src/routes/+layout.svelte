@@ -41,7 +41,7 @@
 		width: 100dvw;
 		background: #f3f4f6;
 		touch-action: none;
-		user-select: none;
+		/* user-select: none; */
 	}
 
 	.app-container {
@@ -55,8 +55,7 @@
 	}
 
 	.scale-wrapper {
-		width: 360px;
-		height: 700px;
+		width: 400px;
 		transform-origin: top center;
 		transform: scale(var(--scale));
 		display: flex;
@@ -77,6 +76,9 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
+		height: calc(100dvh - 96px);
+		overflow: auto;
+		padding-bottom: 40px;
 	}
 
 	.logo-button {

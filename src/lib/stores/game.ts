@@ -1,3 +1,4 @@
+// src/lib/stores/game.ts
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { TilePosition, Quiz } from '$lib/types';
@@ -7,26 +8,35 @@ export const selectedTiles = writable<TilePosition[]>([]);
 export const currentWord = writable('');
 export const targetWords = writable<string[]>([]);
 export const foundWords = writable<Set<string>>(new Set());
+export const solvedPaths = writable<TilePosition[][]>([]);
 export const feedbackMap = writable<Record<string, 'correct' | 'wrong' | null>>({});
 export const hintTarget = writable<{ row: number; col: number } | null>(null);
 export const hintFlashWord = writable<string | null>(null);
 
-export const trailColors = ['#48BB78', '#4299E1', '#F6AD55', '#ED64A6', '#9F7AEA', '#38B2AC', '#ECC94B'];
+export const trailColors = [
+	'#48BB78', '#4299E1', '#F6AD55', '#ED64A6', '#9F7AEA', '#38B2AC', '#ECC94B'
+];
 
-export const remainingLetters = derived(
-	[foundWords, targetWords],
-	([$foundWords, $targetWords]) => {
-		const remaining = $targetWords.filter((w) => !$foundWords.has(w));
-		return new Set(remaining.join('').split(''));
+// === Per-tile state ===
+export const tileNeededCounts = writable<Map<string, number>>(new Map());
+
+export const tileUsedCounts = derived(solvedPaths, ($paths) => {
+	const map = new Map<string, number>();
+	for (const path of $paths) {
+		for (const { row, col } of path) {
+			const key = `${row}-${col}`;
+			map.set(key, (map.get(key) ?? 0) + 1);
+		}
 	}
-);
+	return map;
+});
 
-// === UI State Stores ===
+// === UI View State ===
 export const currentView = writable<'game' | 'picker'>('game');
 export const showMenu = writable(false);
 export const selectedQuiz = writable<Quiz | null>(null);
 
-// === Persistent Memory ===
+// === Persistent Quiz Memory ===
 export type QuizMemory = {
 	foundWords: string[];
 	completed: boolean;
@@ -43,13 +53,12 @@ if (browser) {
 	});
 }
 
+// Automatically track quiz progress
 derived(
 	[selectedQuiz, foundWords, targetWords],
 	([$quiz, $found, $targets]) => {
 		if (!$quiz) return;
-
 		const completed = $found.size === $targets.length;
-
 		quizMemory.update((mem) => ({
 			...mem,
 			[$quiz.id]: {
@@ -58,4 +67,17 @@ derived(
 			}
 		}));
 	}
-).subscribe(() => {}); // activate the derived store
+).subscribe(() => {});
+
+// ✅ Set needed counts based on quiz paths
+selectedQuiz.subscribe((quiz) => {
+	if (!quiz?.paths) return;
+	const map = new Map<string, number>();
+	for (const path of Object.values(quiz.paths)) {
+		for (const { row, col } of path) {
+			const key = `${row}-${col}`;
+			map.set(key, (map.get(key) ?? 0) + 1);
+		}
+	}
+	tileNeededCounts.set(map);
+});

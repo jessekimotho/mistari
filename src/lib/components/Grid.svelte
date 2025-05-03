@@ -32,33 +32,22 @@
 	const trailJustFound = writable(false);
 	const trailIsAlreadyFound = writable(false);
 	const poppingTiles = writable(new Set<string>());
+	const disableClickableTiles = writable(false);
 
-	// Do NOT touch this:
-	function computeTileNeededCounts(grid: string[][], words: string[]): Map<string, number> {
-		const map = new Map<string, number>();
-		for (let r = 0; r < grid.length; r++) {
-			for (let c = 0; c < grid[0].length; c++) {
-				const letter = grid[r][c];
-				const key = `${r}-${c}`;
-				const countInWords = words.reduce(
-					(acc, w) => acc + w.split('').filter((ch) => ch === letter).length,
-					0
-				);
-				if (countInWords > 0) {
-					map.set(key, countInWords);
-				}
+	let previousClickableSet: Set<string> = new Set();
+	const clickableTiles = derived(
+		[tileUsedCounts, tileNeededCounts, disableClickableTiles],
+		([$used, $needed, $disabled]) => {
+			if ($disabled) return previousClickableSet;
+
+			const result = new Set<string>();
+			for (const [key, needed] of $needed.entries()) {
+				if (($used.get(key) ?? 0) < needed) result.add(key);
 			}
+			previousClickableSet = result;
+			return result;
 		}
-		return map;
-	}
-
-	const clickableTiles = derived([tileUsedCounts, tileNeededCounts], ([$used, $needed]) => {
-		const result = new Set<string>();
-		for (const [key, needed] of $needed.entries()) {
-			if (($used.get(key) ?? 0) < needed) result.add(key);
-		}
-		return result;
-	});
+	);
 
 	const trailSegments = derived(selectedTiles, ($tiles) => {
 		if ($tiles.length === 1) {
@@ -110,11 +99,10 @@
 
 		if (get(targetWords).includes(word)) {
 			if (!get(foundWords).has(word)) {
-				foundWords.update((s) => new Set([...s, word]));
-				solvedPaths.update((paths) => [...paths, newTrail]);
 				trailJustFound.set(true);
 				freezeTrail.set(true);
-				await triggerPopEffect(newTrail);
+				disableClickableTiles.set(true);
+				await triggerPopEffect(newTrail, word, newTrail);
 			} else {
 				trailIsAlreadyFound.set(true);
 				setTimeout(resetTrail, 600);
@@ -122,14 +110,25 @@
 		}
 	}
 
-	async function triggerPopEffect(trail: TilePosition[]) {
+	async function triggerPopEffect(trail: TilePosition[], word?: string, path?: TilePosition[]) {
 		poppingTiles.set(new Set(trail.map((p) => `${p.row}-${p.col}`)));
 		await tick();
+
 		setTimeout(() => {
 			poppingTiles.set(new Set());
+		}, 350);
+
+		setTimeout(() => {
 			resetTrail();
 			trailJustFound.set(false);
 			freezeTrail.set(false);
+
+			if (word && path) {
+				foundWords.update((s) => new Set([...s, word]));
+				solvedPaths.update((paths) => [...paths, path]);
+			}
+
+			disableClickableTiles.set(false); // ✅ now allow tiles to disappear
 		}, 600);
 	}
 

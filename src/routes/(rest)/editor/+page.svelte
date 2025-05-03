@@ -164,6 +164,9 @@
 </main>
 
 <style>
+	:global(body) {
+		user-select: default;
+	}
 	.controls {
 		text-align: center;
 		margin: 1rem;

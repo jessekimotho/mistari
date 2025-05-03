@@ -231,7 +231,7 @@
 				y1={a.y}
 				x2={b.x}
 				y2={b.y}
-				stroke={$trailIsAlreadyFound || $trailJustFound ? 'limegreen' : color}
+				stroke={$trailJustFound ? 'limegreen' : $trailIsAlreadyFound ? 'orange' : color}
 				stroke-width={TRAIL_LINE_WIDTH}
 				stroke-linecap="round"
 				vector-effect="non-scaling-stroke"

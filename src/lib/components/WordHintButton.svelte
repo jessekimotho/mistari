@@ -5,11 +5,13 @@
 	export let word: string;
 	export let grid: string[][];
 
-	$: isFound = $foundWords.has(word);
-	$: isFlashing = $hintFlashWord === word;
+	const normalize = (s: string | null) => s?.replace(/\s+/g, '').toUpperCase() ?? '';
+
+	$: isFound = $foundWords.has(normalize(word));
+	$: isFlashing = normalize($hintFlashWord) === normalize(word);
 
 	function showHint() {
-		const letter = word[0];
+		const letter = normalize(word)[0];
 		for (let r = 0; r < grid.length; r++) {
 			for (let c = 0; c < grid[r].length; c++) {
 				if (grid[r][c] === letter) {
@@ -20,6 +22,12 @@
 			}
 		}
 	}
+
+	// For button label: show segment lengths (e.g., "4,2" for "Must Go")
+	$: segmentLengths = word
+		.split(' ')
+		.map((w) => w.length)
+		.join(',');
 </script>
 
 {#if isFound}
@@ -35,9 +43,9 @@
 	<button
 		on:click={showHint}
 		class="inline-flex h-6 items-center justify-center rounded-4xl bg-gray-200 text-lg text-black"
-		style="width: calc(({word.length}ch * 1.75) + 16px)"
+		style="width: calc(({normalize(word).length}ch * 1.75) + 16px)"
 	>
-		{word.length}
+		{segmentLengths}
 	</button>
 {/if}
 

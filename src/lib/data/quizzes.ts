@@ -930,5 +930,295 @@ export const quizzes = [
     }
   ]
 }
+  },
+{
+  id: 7,
+  title: "What's the President's Name today?",
+  author: 'jesse',
+  grid: [["T","G","O","M"],["N","S","U","T"],["A","O","G","R"],["K","S","I","A"]],
+  solutions: ["SUGOI","KASONGO","MUST GO","RAIS","RUTO"],
+  paths: {
+  "SUGOI": [
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    }
+  ],
+  "KASONGO": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "MUSTGO": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "RAIS": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    }
+  ],
+  "RUTO": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ]
+}
+  },
+{
+  id: 8,
+  title: 'Counties 1',
+  author: 'jesse',
+  grid: [["U","K","A","N"],["O","R","B","M"],["E","M","U","A"],["U","K","I","S"]],
+  solutions: ["EMBU","NAROK","KIAMBU","BUSIA","KISUMU","MERU","NAKURU"],
+  paths: {
+  "EMBU": [
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "NAROK": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "KIAMBU": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "BUSIA": [
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "KISUMU": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    }
+  ],
+  "MERU": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "NAKURU": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ]
+}
 },
 ];

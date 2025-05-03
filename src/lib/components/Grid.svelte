@@ -72,6 +72,8 @@
 	const isAdjacent = (a: TilePosition, b: TilePosition) =>
 		Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col)) === 1;
 
+	const normalize = (s: string | null) => s?.replace(/\s+/g, '').toUpperCase() ?? '';
+
 	async function updateTrail(r: number, c: number) {
 		if (get(freezeTrail)) return;
 		const key = `${r}-${c}`;
@@ -97,12 +99,14 @@
 		const word = newTrail.map((p) => grid[p.row][p.col]).join('');
 		currentWord.set(word);
 
-		if (get(targetWords).includes(word)) {
-			if (!get(foundWords).has(word)) {
+		const match = get(targetWords).find((w) => normalize(w) === normalize(word));
+
+		if (match) {
+			if (!get(foundWords).has(normalize(match))) {
 				trailJustFound.set(true);
 				freezeTrail.set(true);
 				disableClickableTiles.set(true);
-				await triggerPopEffect(newTrail, word, newTrail);
+				await triggerPopEffect(newTrail, match, newTrail);
 			} else {
 				trailIsAlreadyFound.set(true);
 				setTimeout(resetTrail, 600);
@@ -124,11 +128,11 @@
 			freezeTrail.set(false);
 
 			if (word && path) {
-				foundWords.update((s) => new Set([...s, word]));
+				foundWords.update((s) => new Set([...s, normalize(word)]));
 				solvedPaths.update((paths) => [...paths, path]);
 			}
 
-			disableClickableTiles.set(false); // ✅ now allow tiles to disappear
+			disableClickableTiles.set(false);
 		}, 600);
 	}
 

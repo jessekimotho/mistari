@@ -104,8 +104,13 @@ export function tryRescueWords(gridLetters: (string | null)[], wordsToTry: strin
 
   for (const word of wordsToTry) {
     const tempLetters = gridLetters.slice();
-    const path = findRandomPath(word, tempLetters);
-    if (!path) continue;
+const clean = word.replace(/\s+/g, '');
+const path = findRandomPath(clean, tempLetters);
+if (!path) continue;
+
+for (let i = 0; i < path.length; i++) {
+  tempLetters[path[i]] = clean[i];
+}
     if (path.some(i => usedMask.has(i))) continue;
     for (let i = 0; i < path.length; i++) {
       tempLetters[path[i]] = word[i];
@@ -151,15 +156,18 @@ export function generateGrid(words: string[], debug = false): {
     const wordPaths: Record<string, TilePosition[]> = {};
 
     for (const w of order) {
-      const path = findRandomPath(w, letters);
-      if (!path) continue;
-      for (let k = 0; k < path.length; k++) {
-        letters[path[k]] = w[k];
-      }
-      placedLocal.push(w);
-      localPaths.push(path.slice());
-      wordPaths[w] = path.map(i => ({ row: Math.floor(i / N), col: i % N }));
+    const cleanWord = w.replace(/\s+/g, '');
+    const path = findRandomPath(cleanWord, letters);
+    if (!path) continue;
+
+    for (let k = 0; k < path.length; k++) {
+      letters[path[k]] = cleanWord[k];
     }
+
+    placedLocal.push(w); // Still push original "Must Go"
+    localPaths.push(path.slice());
+    wordPaths[w] = path.map(i => ({ row: Math.floor(i / N), col: i % N }));
+  }
 
     const placedCount = placedLocal.length;
     const usedCount = letters.filter(l => l !== null).length;

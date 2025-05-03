@@ -41,7 +41,7 @@
 		width: 100dvw;
 		background: #f3f4f6;
 		touch-action: none;
-		/* user-select: none; */
+		user-select: none;
 	}
 
 	.app-container {

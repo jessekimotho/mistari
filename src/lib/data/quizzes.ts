@@ -2810,7 +2810,7 @@ export const quizzes = [
   },
 {
   id: 20,
-  title: 'New Puzzle',
+  title: 'Bible Books 2',
   author: 'jesse',
   grid: [["L","K","E","R"],["R","U","T","H"],["A","I","S","A"],["M","T","C","E"]],
   solutions: ["TITUS","MARK","ACTS","RUTH","ESTHER","MICAH","LUKE"],

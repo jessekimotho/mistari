@@ -2600,5 +2600,363 @@ export const quizzes = [
     }
   ]
 }
+  },
+{
+  id: 19,
+  title: 'Bible Books 1',
+  author: 'jesse',
+  grid: [["L","A","E","L"],["E","S","M","U"],["I","O","H","A"],["J","N","A","D"]],
+  solutions: ["AMOS","HOSEA","DANIEL","SAMUEL","JONAH","JOSHUA","NAHUM","JOEL","JOHN"],
+  paths: {
+  "AMOS": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ],
+  "HOSEA": [
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "DANIEL": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "SAMUEL": [
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    }
+  ],
+  "JONAH": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "JOSHUA": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "NAHUM": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    }
+  ],
+  "JOEL": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "JOHN": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    }
+  ]
+}
+  },
+{
+  id: 20,
+  title: 'New Puzzle',
+  author: 'jesse',
+  grid: [["L","K","E","R"],["R","U","T","H"],["A","I","S","A"],["M","T","C","E"]],
+  solutions: ["TITUS","MARK","ACTS","RUTH","ESTHER","MICAH","LUKE"],
+  paths: {
+  "TITUS": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "MARK": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "ACTS": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "RUTH": [
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    }
+  ],
+  "ESTHER": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    }
+  ],
+  "MICAH": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    }
+  ],
+  "LUKE": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ]
+}
 },
 ];

@@ -4665,38 +4665,20 @@ export const quizzes = [
   id: 31,
   title: 'Actualfood 🍒',
   author: 'jesse',
-  grid: [["P","E","R","P"],["U","S","L","P"],["S","N","A","T"],["T","M","E","I"]],
-  solutions: ["PLANS","MENU","PREP","ITEMS","PATIENT","USER","MEAL"],
+  grid: [["M","E","N","U"],["Y","T","A","S"],["H","L","E","P"],["S","R","P","H"]],
+  solutions: ["HEALTH","USER","MEAL","PREP","PLANS","MYTHS","MENU"],
   paths: {
-  "PLANS": [
+  "HEALTH": [
     {
-      "row": 0,
+      "row": 3,
       "col": 3
     },
     {
-      "row": 1,
-      "col": 2
-    },
-    {
       "row": 2,
       "col": 2
     },
     {
-      "row": 2,
-      "col": 1
-    },
-    {
       "row": 1,
-      "col": 1
-    }
-  ],
-  "MENU": [
-    {
-      "row": 3,
-      "col": 1
-    },
-    {
-      "row": 3,
       "col": 2
     },
     {
@@ -4705,81 +4687,95 @@ export const quizzes = [
     },
     {
       "row": 1,
-      "col": 0
-    }
-  ],
-  "PREP": [
-    {
-      "row": 1,
-      "col": 3
-    },
-    {
-      "row": 0,
-      "col": 2
-    },
-    {
-      "row": 0,
-      "col": 1
-    },
-    {
-      "row": 0,
-      "col": 0
-    }
-  ],
-  "ITEMS": [
-    {
-      "row": 3,
-      "col": 3
-    },
-    {
-      "row": 2,
-      "col": 3
-    },
-    {
-      "row": 3,
-      "col": 2
-    },
-    {
-      "row": 3,
       "col": 1
     },
     {
       "row": 2,
-      "col": 0
-    }
-  ],
-  "PATIENT": [
-    {
-      "row": 1,
-      "col": 3
-    },
-    {
-      "row": 2,
-      "col": 2
-    },
-    {
-      "row": 2,
-      "col": 3
-    },
-    {
-      "row": 3,
-      "col": 3
-    },
-    {
-      "row": 3,
-      "col": 2
-    },
-    {
-      "row": 2,
-      "col": 1
-    },
-    {
-      "row": 3,
       "col": 0
     }
   ],
   "USER": [
     {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    }
+  ],
+  "MEAL": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    }
+  ],
+  "PREP": [
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "PLANS": [
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    }
+  ],
+  "MYTHS": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
       "row": 1,
       "col": 0
     },
@@ -4788,30 +4784,30 @@ export const quizzes = [
       "col": 1
     },
     {
-      "row": 0,
-      "col": 1
+      "row": 2,
+      "col": 0
     },
     {
-      "row": 0,
-      "col": 2
+      "row": 3,
+      "col": 0
     }
   ],
-  "MEAL": [
+  "MENU": [
     {
-      "row": 3,
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
       "col": 1
     },
     {
-      "row": 3,
+      "row": 0,
       "col": 2
     },
     {
-      "row": 2,
-      "col": 2
-    },
-    {
-      "row": 1,
-      "col": 2
+      "row": 0,
+      "col": 3
     }
   ]
 }

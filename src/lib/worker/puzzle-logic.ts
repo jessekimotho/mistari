@@ -147,6 +147,37 @@ export function generateGrid(words: string[], debug = false): {
   let bestPaths: number[][] = [];
   let bestWordPaths: Record<string, TilePosition[]> = {};
 
+  function findAllPaths(word: string, grid: string[][]): number[][] {
+    const results: number[][] = [];
+    const visited = Array(N * N).fill(false);
+
+    function dfs(pos: number, idx: number, path: number[]) {
+      const r = Math.floor(pos / N), c = pos % N;
+      if (grid[r][c] !== word[idx]) return;
+
+      if (idx === word.length - 1) {
+        results.push([...path, pos]);
+        return;
+      }
+
+      visited[pos] = true;
+
+      for (const nei of neighbors[pos]) {
+        if (visited[nei]) continue;
+        dfs(nei, idx + 1, [...path, pos]);
+      }
+
+      visited[pos] = false;
+    }
+
+    for (let i = 0; i < N * N; i++) {
+      dfs(i, 0, []);
+      if (results.length > 1) break; // early exit
+    }
+
+    return results;
+  }
+
   while (performance.now() - startTime < TIME_LIMIT_MS) {
     retries++;
     const order = shuffle([...words].sort((a, b) => wordComplexityScore(b) - wordComplexityScore(a)));
@@ -156,31 +187,42 @@ export function generateGrid(words: string[], debug = false): {
     const wordPaths: Record<string, TilePosition[]> = {};
 
     for (const w of order) {
-    const cleanWord = w.replace(/\s+/g, '');
-    const path = findRandomPath(cleanWord, letters);
-    if (!path) continue;
+      const cleanWord = w.replace(/\s+/g, '');
+      const path = findRandomPath(cleanWord, letters);
+      if (!path) continue;
 
-    for (let k = 0; k < path.length; k++) {
-      letters[path[k]] = cleanWord[k];
+      for (let k = 0; k < path.length; k++) {
+        letters[path[k]] = cleanWord[k];
+      }
+
+      placedLocal.push(w);
+      localPaths.push(path.slice());
+      wordPaths[w] = path.map(i => ({ row: Math.floor(i / N), col: i % N }));
     }
 
-    placedLocal.push(w); // Still push original "Must Go"
-    localPaths.push(path.slice());
-    wordPaths[w] = path.map(i => ({ row: Math.floor(i / N), col: i % N }));
-  }
-
-    const placedCount = placedLocal.length;
     const usedCount = letters.filter(l => l !== null).length;
     const clusterScore = clusteringScore(letters);
 
-    if (usedCount === N * N) {
-      const isBetter = placedCount > bestPlacedCount ||
-        (placedCount === bestPlacedCount && clusterScore > bestClusterScore);
+    // Validate that each word has exactly one path
+    const finalGrid = buildGrid(letters);
+    let allUnique = true;
+    for (const word of placedLocal) {
+      const clean = word.replace(/\s+/g, '');
+      const paths = findAllPaths(clean, finalGrid);
+      if (paths.length !== 1) {
+        allUnique = false;
+        break;
+      }
+    }
+
+    if (usedCount === N * N && allUnique) {
+      const isBetter = placedLocal.length > bestPlacedCount ||
+        (placedLocal.length === bestPlacedCount && clusterScore > bestClusterScore);
 
       if (isBetter) {
         bestLetters = letters.slice();
         bestPlaced = placedLocal.slice();
-        bestPlacedCount = placedCount;
+        bestPlacedCount = placedLocal.length;
         bestClusterScore = clusterScore;
         bestPaths = localPaths.map(p => p.slice());
         bestWordPaths = { ...wordPaths };

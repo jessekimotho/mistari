@@ -2812,39 +2812,29 @@ export const quizzes = [
   id: 20,
   title: 'Bible Books 2',
   author: 'jesse',
-  grid: [["L","K","E","R"],["R","U","T","H"],["A","I","S","A"],["M","T","C","E"]],
-  solutions: ["TITUS","MARK","ACTS","RUTH","ESTHER","MICAH","LUKE"],
+  grid: [["R","L","M","E"],["E","I","Z","A"],["H","E","K","R"],["S","T","U","L"]],
+  solutions: ["EZEKIEL","RUTH","ESTHER","MARK","LUKE","EZRA"],
   paths: {
-  "TITUS": [
+  "EZEKIEL": [
     {
-      "row": 3,
-      "col": 1
-    },
-    {
-      "row": 2,
-      "col": 1
+      "row": 0,
+      "col": 3
     },
     {
       "row": 1,
       "col": 2
     },
     {
-      "row": 1,
+      "row": 2,
       "col": 1
     },
     {
       "row": 2,
       "col": 2
-    }
-  ],
-  "MARK": [
-    {
-      "row": 3,
-      "col": 0
     },
     {
-      "row": 2,
-      "col": 0
+      "row": 1,
+      "col": 1
     },
     {
       "row": 1,
@@ -2853,48 +2843,127 @@ export const quizzes = [
     {
       "row": 0,
       "col": 1
-    }
-  ],
-  "ACTS": [
-    {
-      "row": 2,
-      "col": 3
-    },
-    {
-      "row": 3,
-      "col": 2
-    },
-    {
-      "row": 3,
-      "col": 1
-    },
-    {
-      "row": 2,
-      "col": 2
     }
   ],
   "RUTH": [
     {
-      "row": 1,
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    }
+  ],
+  "ESTHER": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
       "col": 0
     },
     {
       "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "MARK": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "LUKE": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
       "col": 1
+    }
+  ],
+  "EZRA": [
+    {
+      "row": 0,
+      "col": 3
     },
     {
       "row": 1,
       "col": 2
     },
     {
+      "row": 2,
+      "col": 3
+    },
+    {
       "row": 1,
       "col": 3
     }
-  ],
-  "ESTHER": [
+  ]
+}
+  },
+{
+  id: 21,
+  title: 'Bible Books 3',
+  author: 'jesse',
+  grid: [["H","M","S","G"],["I","A","E","D"],["C","M","U","L"],["S","T","A","J"]],
+  solutions: ["SAMUEL","MICAH","JAMES","ACTS","JUDGES","JUDE"],
+  paths: {
+  "SAMUEL": [
     {
-      "row": 3,
-      "col": 3
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
     },
     {
       "row": 2,
@@ -2905,20 +2974,145 @@ export const quizzes = [
       "col": 2
     },
     {
-      "row": 1,
-      "col": 3
-    },
-    {
-      "row": 0,
-      "col": 2
-    },
-    {
-      "row": 0,
+      "row": 2,
       "col": 3
     }
   ],
   "MICAH": [
     {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "JAMES": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "ACTS": [
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    }
+  ],
+  "JUDGES": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "JUDE": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    }
+  ]
+}
+  },
+{
+  id: 22,
+  title: 'Animals in the Bible',
+  author: 'jesse',
+  grid: [["N","E","V","D"],["S","T","A","O"],["B","E","G","R"],["D","L","E","F"]],
+  solutions: ["STAG","DEER","DOVE","BEAR","EAGLE","RAVEN","FROG","GOAT"],
+  paths: {
+  "STAG": [
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "DEER": [
+    {
       "row": 3,
       "col": 0
     },
@@ -2933,15 +3127,1660 @@ export const quizzes = [
     {
       "row": 2,
       "col": 3
+    }
+  ],
+  "DOVE": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "BEAR": [
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "EAGLE": [
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    }
+  ],
+  "RAVEN": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "FROG": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "GOAT": [
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ]
+}
+  },
+{
+  id: 23,
+  title: 'Kings in the Bible',
+  author: 'jesse',
+  grid: [["Z","I","A","H"],["A","H","S","B"],["E","A","O","E"],["P","K","H","J"]],
+  solutions: ["HOSHEA","AHAB","PEKAHIAH","JEHOAHAZ","AHAZIAH","JEHOASH","JOASH","PEKAH","JOSIAH"],
+  paths: {
+  "HOSHEA": [
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    }
+  ],
+  "AHAB": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
     },
     {
       "row": 1,
       "col": 3
     }
   ],
-  "LUKE": [
+  "PEKAHIAH": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
     {
       "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    }
+  ],
+  "JEHOAHAZ": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "AHAZIAH": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    }
+  ],
+  "JEHOASH": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ],
+  "JOASH": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ],
+  "PEKAH": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ],
+  "JOSIAH": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ]
+}
+  },
+{
+  id: 24,
+  title: 'Kings in the Bible 2',
+  author: 'jesse',
+  grid: [["O","P","M","E"],["B","A","H","N"],["O","R","A","J"],["D","H","E","M"]],
+  solutions: ["PHARAOH","JEROBOAM","MENAHEM","HEROD","REHOBOAM","JEHORAM"],
+  paths: {
+  "PHARAOH": [
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    }
+  ],
+  "JEROBOAM": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "MENAHEM": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    }
+  ],
+  "HEROD": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 0
+    }
+  ],
+  "REHOBOAM": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "JEHORAM": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ]
+}
+  },
+{
+  id: 24,
+  title: 'Kings in the Bible 3',
+  author: 'jesse',
+  grid: [["E","H","U","A"],["D","Z","A","M"],["E","I","Z","H"],["K","V","A","D"]],
+  solutions: ["UZZIAH","DAVID","HEZEKIAH","AMAZIAH","ZEDEKIAH"],
+  paths: {
+  "UZZIAH": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "DAVID": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    }
+  ],
+  "HEZEKIAH": [
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "AMAZIAH": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "ZEDEKIAH": [
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ]
+}
+  },
+{
+  id: 25,
+  title: 'Kings in the Bible 4',
+  author: 'jesse',
+  grid: [["M","A","A","C"],["P","J","G","Y"],["P","I","R","A"],["S","U","B","D"]],
+  solutions: ["AGRIPPA","ABIJAM","CYRUS","DARIUS"],
+  paths: {
+  "AGRIPPA": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "ABIJAM": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "CYRUS": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    }
+  ],
+  "DARIUS": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    }
+  ]
+}
+  },
+{
+  id: 26,
+  title: 'Kenyan Foods 1',
+  author: 'jesse',
+  grid: [["D","E","A","O"],["N","U","M","S"],["A","K","U","A"],["L","I","P","S"]],
+  solutions: ["SUKUMA","OMENA","PILAU","SAMOSA","NDUMA","KUNDE"],
+  paths: {
+  "SUKUMA": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "OMENA": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    }
+  ],
+  "PILAU": [
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ],
+  "SAMOSA": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    }
+  ],
+  "NDUMA": [
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "KUNDE": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ]
+}
+  },
+{
+  id: 27,
+  title: 'Kenyan Foods 2',
+  author: 'jesse',
+  grid: [["W","I","H","U"],["M","B","G","A"],["I","A","O","J"],["L","R","I","N"]],
+  solutions: ["MBOGA","NJAHI","IRIO","UGALI","BHAJIA","WIMBI"],
+  paths: {
+  "MBOGA": [
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    }
+  ],
+  "NJAHI": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "IRIO": [
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "UGALI": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    }
+  ],
+  "BHAJIA": [
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    }
+  ],
+  "WIMBI": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    }
+  ]
+}
+  },
+{
+  id: 28,
+  title: 'Kenyan Foods 3',
+  author: 'jesse',
+  grid: [["N","M","T","L"],["Y","A","A","I"],["I","P","H","R"],["G","T","E","C"]],
+  solutions: ["CHAPATI","GITHERI","NYAMA","TILAPIA"],
+  paths: {
+  "CHAPATI": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    }
+  ],
+  "GITHERI": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    }
+  ],
+  "NYAMA": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    }
+  ],
+  "TILAPIA": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ]
+}
+  },
+{
+  id: 29,
+  title: 'Phone Brands 1',
+  author: 'jesse',
+  grid: [["S","S","A","V"],["U","L","P","A"],["I","P","E","O"],["O","T","N","C"]],
+  solutions: ["APPLE","ITEL","ASUS","ONEPLUS","TECNO","OPPO","LAVA"],
+  paths: {
+  "APPLE": [
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    }
+  ],
+  "ITEL": [
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ],
+  "ASUS": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "ONEPLUS": [
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "TECNO": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "OPPO": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "LAVA": [
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    }
+  ]
+}
+  },
+{
+  id: 30,
+  title: 'Phone Brands 2',
+  author: 'jesse',
+  grid: [["S","R","I","P"],["O","V","O","H"],["Y","N","I","K"],["L","E","V","A"]],
+  solutions: ["VIVO","HONOR","LENOVO","SONY","IPHONE","NOKIA"],
+  paths: {
+  "VIVO": [
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    }
+  ],
+  "HONOR": [
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 0,
+      "col": 1
+    }
+  ],
+  "LENOVO": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    }
+  ],
+  "SONY": [
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    }
+  ],
+  "IPHONE": [
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 1
+    }
+  ],
+  "NOKIA": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    }
+  ]
+}
+},{
+  id: 31,
+  title: 'Actualfood 🍒',
+  author: 'jesse',
+  grid: [["P","E","R","P"],["U","S","L","P"],["S","N","A","T"],["T","M","E","I"]],
+  solutions: ["PLANS","MENU","PREP","ITEMS","PATIENT","USER","MEAL"],
+  paths: {
+  "PLANS": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 1
+    }
+  ],
+  "MENU": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    }
+  ],
+  "PREP": [
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    }
+  ],
+  "ITEMS": [
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    }
+  ],
+  "PATIENT": [
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 0
+    }
+  ],
+  "USER": [
+    {
+      "row": 1,
       "col": 0
     },
     {
@@ -2954,6 +4793,24 @@ export const quizzes = [
     },
     {
       "row": 0,
+      "col": 2
+    }
+  ],
+  "MEAL": [
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
       "col": 2
     }
   ]

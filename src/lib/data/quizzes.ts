@@ -4819,5 +4819,140 @@ export const quizzes = [
     }
   ]
 }
+  },
+{
+  id: 32,
+  title:'Actualfood 🍒',
+  author: 'jesse',
+  grid: [["O","S","L","D"],["E","U","P","I"],["C","R","E","N"],["P","Y","A","T"]],
+  solutions: ["PREP","CULINARY","SOURCE","USER","DIETARY"],
+  paths: {
+  "PREP": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 2
+    }
+  ],
+  "CULINARY": [
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 1
+    }
+  ],
+  "SOURCE": [
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 1,
+      "col": 0
+    }
+  ],
+  "USER": [
+    {
+      "row": 1,
+      "col": 1
+    },
+    {
+      "row": 0,
+      "col": 1
+    },
+    {
+      "row": 1,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 1
+    }
+  ],
+  "DIETARY": [
+    {
+      "row": 0,
+      "col": 3
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 3,
+      "col": 1
+    }
+  ]
+}
 },
 ];

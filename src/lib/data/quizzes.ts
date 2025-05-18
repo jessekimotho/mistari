@@ -253,7 +253,7 @@ export const quizzes = [
   },
 {
   id: 3,
-  title: 'Election Heat 🗳️🥵',
+  title: 'Election Heat',
   author: 'jesse',
   grid: [["P","C","L","S"],["B","O","T","L"],["V","E","E","A"],["D","I","B","S"]],
   solutions: ["VOTE","IEBC","BALLOT","DEBATE","POLLS","SEATS"],
@@ -1078,24 +1078,23 @@ export const quizzes = [
 },
 {
   id: 8,
-
   title: 'Counties 1',
   author: 'jesse',
-  grid: [["U","K","A","N"],["O","R","B","M"],["E","M","U","A"],["U","K","I","S"]],
-  solutions: ["EMBU","NAROK","KIAMBU","BUSIA","KISUMU","MERU","NAKURU", "SAMBURU"],
+  grid: [["U","O","K","U"],["R","E","M","R"],["A","B","U","A"],["N","K","I","S"]],
+  solutions: ["EMBU","NAROK","KIAMBU","NAKURU","BUSIA","MERU","KISUMU","SAMBURU"],
   paths: {
   "EMBU": [
     {
-      "row": 2,
-      "col": 0
-    },
-    {
-      "row": 2,
+      "row": 1,
       "col": 1
     },
     {
       "row": 1,
       "col": 2
+    },
+    {
+      "row": 2,
+      "col": 1
     },
     {
       "row": 2,
@@ -1104,16 +1103,12 @@ export const quizzes = [
   ],
   "NAROK": [
     {
-      "row": 0,
-      "col": 3
+      "row": 3,
+      "col": 0
     },
     {
-      "row": 0,
-      "col": 2
-    },
-    {
-      "row": 1,
-      "col": 1
+      "row": 2,
+      "col": 0
     },
     {
       "row": 1,
@@ -1122,6 +1117,10 @@ export const quizzes = [
     {
       "row": 0,
       "col": 1
+    },
+    {
+      "row": 0,
+      "col": 2
     }
   ],
   "KIAMBU": [
@@ -1139,37 +1138,81 @@ export const quizzes = [
     },
     {
       "row": 1,
-      "col": 3
+      "col": 2
     },
     {
-      "row": 1,
-      "col": 2
+      "row": 2,
+      "col": 1
     },
     {
       "row": 2,
       "col": 2
     }
   ],
+  "NAKURU": [
+    {
+      "row": 3,
+      "col": 0
+    },
+    {
+      "row": 2,
+      "col": 0
+    },
+    {
+      "row": 3,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 1,
+      "col": 3
+    },
+    {
+      "row": 0,
+      "col": 3
+    }
+  ],
   "BUSIA": [
+    {
+      "row": 2,
+      "col": 1
+    },
+    {
+      "row": 2,
+      "col": 2
+    },
+    {
+      "row": 3,
+      "col": 3
+    },
+    {
+      "row": 3,
+      "col": 2
+    },
+    {
+      "row": 2,
+      "col": 3
+    }
+  ],
+  "MERU": [
     {
       "row": 1,
       "col": 2
     },
     {
-      "row": 2,
-      "col": 2
+      "row": 1,
+      "col": 1
     },
     {
-      "row": 3,
-      "col": 3
+      "row": 1,
+      "col": 0
     },
     {
-      "row": 3,
-      "col": 2
-    },
-    {
-      "row": 2,
-      "col": 3
+      "row": 0,
+      "col": 0
     }
   ],
   "KISUMU": [
@@ -1190,69 +1233,46 @@ export const quizzes = [
       "col": 2
     },
     {
-      "row": 2,
-      "col": 1
+      "row": 1,
+      "col": 2
     },
     {
-      "row": 3,
-      "col": 0
+      "row": 0,
+      "col": 3
     }
   ],
-  "MERU": [
+  "SAMBURU": [
     {
-      "row": 2,
-      "col": 1
+      "row": 3,
+      "col": 3
     },
     {
       "row": 2,
-      "col": 0
+      "col": 3
     },
     {
       "row": 1,
+      "col": 2
+    },
+    {
+      "row": 2,
       "col": 1
     },
     {
       "row": 2,
       "col": 2
-    }
-  ],
-  "NAKURU": [
+    },
     {
-      "row": 0,
+      "row": 1,
       "col": 3
     },
     {
       "row": 0,
-      "col": 2
-    },
-    {
-      "row": 0,
-      "col": 1
-    },
-    {
-      "row": 0,
-      "col": 0
-    },
-    {
-      "row": 1,
-      "col": 1
-    },
-    {
-      "row": 2,
-      "col": 2
+      "col": 3
     }
-  ],"SAMBURU": [
-  { "row": 3, "col": 3 },  
-  { "row": 2, "col": 3 },  
-  { "row": 2, "col": 1 }, 
-  { "row": 1, "col": 2 }, 
-  { "row": 2, "col": 2 }, 
-  { "row": 1, "col": 1 }, 
-  { "row": 2, "col": 0 } 
-]
-
+  ]
 }
-  },
+},
 {
   id: 9,
   title: 'Counties 2',
@@ -4663,7 +4683,7 @@ export const quizzes = [
 }
 },{
   id: 31,
-  title: 'Actualfood 🍒',
+  title: 'Actualfood',
   author: 'jesse',
   grid: [["T","I","B","M"],["P","A","E","H"],["L","N","U","L"],["H","T","Y","M"]],
   solutions: ["MENU","LABEL","MYTH","PATIENT","MEAL","HEALTH","PLAN"],
@@ -4822,7 +4842,7 @@ export const quizzes = [
   },
 {
   id: 32,
-  title:'Actualfood 🍒',
+  title:'Actualfood ',
   author: 'jesse',
   grid: [["O","S","L","D"],["E","U","P","I"],["C","R","E","N"],["P","Y","A","T"]],
   solutions: ["PREP","CULINARY","SOURCE","USER","DIETARY"],

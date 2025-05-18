@@ -15,7 +15,7 @@
 		| undefined = undefined;
 
 	let loading = false;
-	let words: string[] = ['EGRET', 'STORK', 'HERON', 'CRANE', 'DOVE', 'TERN'];
+	let words: string[] = [];
 	let newWord = '';
 	let grid: string[][] = [];
 	let placed: string[] = [];

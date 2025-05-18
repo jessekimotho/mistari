@@ -1,5 +1,5 @@
 // src/lib/stores/game.ts
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { TilePosition, Quiz } from '$lib/types';
 
@@ -17,7 +17,7 @@ export const trailColors = [
 	'#48BB78', '#4299E1', '#F6AD55', '#ED64A6', '#9F7AEA', '#38B2AC', '#ECC94B'
 ];
 
-// === Per-tile state ===
+// === Per-tile State ===
 export const tileNeededCounts = writable<Map<string, number>>(new Map());
 
 export const tileUsedCounts = derived(solvedPaths, ($paths) => {
@@ -42,32 +42,46 @@ export type QuizMemory = {
 	completed: boolean;
 };
 
-const stored = browser ? localStorage.getItem('quizMemory') : null;
-const initial: Record<number, QuizMemory> = stored ? JSON.parse(stored) : {};
-
-export const quizMemory = writable<Record<number, QuizMemory>>(initial);
-
-if (browser) {
-	quizMemory.subscribe((val) => {
-		localStorage.setItem('quizMemory', JSON.stringify(val));
-	});
+function getMemoryForQuiz(id: number): QuizMemory {
+	if (!browser) return { foundWords: [], completed: false };
+	const raw = localStorage.getItem(`quizMemory-${id}`);
+	return raw ? JSON.parse(raw) : { foundWords: [], completed: false };
 }
 
-// Automatically track quiz progress
-derived(
-	[selectedQuiz, foundWords, targetWords],
-	([$quiz, $found, $targets]) => {
-		if (!$quiz) return;
-		const completed = $found.size === $targets.length;
-		quizMemory.update((mem) => ({
-			...mem,
-			[$quiz.id]: {
-				foundWords: Array.from($found),
-				completed
-			}
-		}));
+function saveMemoryForQuiz(id: number, mem: QuizMemory) {
+	if (!browser) return;
+	localStorage.setItem(`quizMemory-${id}`, JSON.stringify(mem));
+}
+
+// Store holding only the current quiz’s memory
+export const quizMemory = writable<QuizMemory>({ foundWords: [], completed: false });
+
+// Load & reseed on quiz switch
+selectedQuiz.subscribe((quiz) => {
+	if (!quiz) {
+		quizMemory.set({ foundWords: [], completed: false });
+		foundWords.set(new Set());
+		solvedPaths.set([]);
+		return;
 	}
-).subscribe(() => {});
+	const mem = getMemoryForQuiz(quiz.id);
+	quizMemory.set(mem);
+
+	// Reseed game state from memory
+	foundWords.set(new Set(mem.foundWords));
+	solvedPaths.set(mem.foundWords.map((word) => quiz.paths[word] || []));
+});
+
+// Persist foundWords changes for the active quiz
+foundWords.subscribe((fw) => {
+	const quiz = get(selectedQuiz);
+	if (!quiz) return;
+	const arr = Array.from(fw);
+	const completed = fw.size === get(targetWords).length;
+	const mem: QuizMemory = { foundWords: arr, completed };
+	saveMemoryForQuiz(quiz.id, mem);
+	quizMemory.set(mem);
+});
 
 // ✅ Set needed counts based on quiz paths
 selectedQuiz.subscribe((quiz) => {
